@@ -140,14 +140,10 @@ void bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         ogs_sbi_request_t *(*build)(bsf_sess_t *sess, void *data))
 {
     ogs_sbi_xact_t *xact = NULL;
-    bsf_ue_t *bsf_ue = NULL;
 
     ogs_assert(target_nf_type);
 
     ogs_assert(sess);
-    bsf_ue = sess->bsf_ue;
-    ogs_assert(bsf_ue);
-
     ogs_assert(stream);
     ogs_assert(build);
 
@@ -158,7 +154,7 @@ void bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         ogs_error("bsf_sbi_discover_and_send() failed");
         ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", bsf_ue->supi);
+                "Cannot discover", sess->dnn);
         return;
     }
 
@@ -169,7 +165,7 @@ void bsf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         ogs_error("bsf_sbi_discover_and_send() failed");
         ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", bsf_ue->supi);
+                "Cannot discover", sess->dnn);
         return;
     }
 }

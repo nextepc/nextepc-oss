@@ -27,6 +27,9 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
+    OpenAPI_pcf_binding_t PcfBinding;
+    OpenAPI_snssai_t sNssai;
+
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
     ogs_assert(pcf_ue);
@@ -38,8 +41,26 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
 
+    memset(&PcfBinding, 0, sizeof(PcfBinding));
+
+    PcfBinding.supi = pcf_ue->supi;
+    PcfBinding.gpsi = pcf_ue->gpsi;
+
+    ogs_assert(sess->dnn);
+    PcfBinding.dnn = sess->dnn;
+
+    memset(&sNssai, 0, sizeof(sNssai));
+    sNssai.sst = sess->s_nssai.sst;
+    sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
+    PcfBinding.snssai = &sNssai;
+
+    message.PcfBinding = &PcfBinding;
+
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
+    
+    if (sNssai.sd)
+        ogs_free(sNssai.sd);
 
     return request;
 }

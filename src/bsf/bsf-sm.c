@@ -17,9 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
 #include "sbi-path.h"
 #include "nnrf-handler.h"
+#include "nbsf-handler.h"
 
 void bsf_state_initial(ogs_fsm_t *s, bsf_event_t *e)
 {
@@ -41,18 +41,15 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
 {
     int rv;
 
-#if 0
     bsf_sess_t *sess = NULL;
-    bsf_ue_t *bsf_ue = NULL;
-#endif
 
     ogs_sbi_stream_t *stream = NULL;
-    ogs_sbi_request_t *sbi_request = NULL;
+    ogs_sbi_request_t *request = NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_t *subscription = NULL;
-    ogs_sbi_response_t *sbi_response = NULL;
-    ogs_sbi_message_t sbi_message;
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_message_t message;
     ogs_sbi_xact_t *sbi_xact = NULL;
 
     bsf_sm_debug(e);
@@ -67,12 +64,12 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
         break;
 
     case BSF_EVT_SBI_SERVER:
-        sbi_request = e->sbi.request;
-        ogs_assert(sbi_request);
+        request = e->sbi.request;
+        ogs_assert(request);
         stream = e->sbi.data;
         ogs_assert(stream);
 
-        rv = ogs_sbi_parse_request(&sbi_message, sbi_request);
+        rv = ogs_sbi_parse_request(&message, request);
         if (rv != OGS_OK) {
             /* 'sbi_message' buffer is released in ogs_sbi_parse_request() */
             ogs_error("cannot parse HTTP sbi_message");
@@ -81,105 +78,129 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
             break;
         }
 
-        if (strcmp(sbi_message.h.api.version, OGS_SBI_API_V1) != 0) {
-            ogs_error("Not supported version [%s]", sbi_message.h.api.version);
+        if (strcmp(message.h.api.version, OGS_SBI_API_V1) != 0) {
+            ogs_error("Not supported version [%s]", message.h.api.version);
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    &sbi_message, "Not supported version", NULL);
-            ogs_sbi_message_free(&sbi_message);
+                    &message, "Not supported version", NULL);
+            ogs_sbi_message_free(&message);
             break;
         }
 
-        SWITCH(sbi_message.h.service.name)
+        SWITCH(message.h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
 
-            SWITCH(sbi_message.h.resource.component[0])
+            SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
-                SWITCH(sbi_message.h.method)
+                SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    bsf_nnrf_handle_nf_status_notify(stream, &sbi_message);
+                    bsf_nnrf_handle_nf_status_notify(stream, &message);
                     break;
 
                 DEFAULT
-                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
                     ogs_sbi_server_send_error(stream,
-                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &sbi_message,
-                            "Invalid HTTP method", sbi_message.h.method);
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
+                            "Invalid HTTP method", message.h.method);
                 END
                 break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[0]);
+                        message.h.resource.component[0]);
                 ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Invalid resource name",
-                        sbi_message.h.resource.component[0]);
+                        message.h.resource.component[0]);
             END
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
-
-            SWITCH(sbi_message.h.resource.component[0])
+            SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+                if (message.h.resource.component[1]) {
+                    sess = bsf_sess_find_by_binding_id(
+                            message.h.resource.component[1]);
+                } else {
+                    if (message.PcfBinding &&
+                        message.PcfBinding->snssai && message.PcfBinding->dnn) {
+                        ogs_s_nssai_t s_nssai;
 
-#if 0
-                ogs_fatal("asdfkljasdf");
-#endif
+                        s_nssai.sst = message.PcfBinding->snssai->sst;
+                        s_nssai.sd = ogs_s_nssai_sd_from_string(
+                                message.PcfBinding->snssai->sd);
+
+                        sess = bsf_sess_find_by_snssai_and_dnn(
+                                &s_nssai, message.PcfBinding->dnn);
+                        if (!sess) {
+                            sess = bsf_sess_add_by_snssai_and_dnn(
+                                    &s_nssai, message.PcfBinding->dnn);
+                            ogs_assert(sess);
+                        }
+                    }
+                }
+
+                if (!sess) {
+                    ogs_error("Not found [%s]", message.h.method);
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                        &message, "Not found", message.h.method);
+                    break;
+                }
+
+                bsf_nbsf_management_pcf_binding(sess, stream, &message);
+                break;
 
             DEFAULT
-#if 0
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[0]);
-#endif
+                        message.h.resource.component[0]);
                 ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                         "Invalid resource name",
-                        sbi_message.h.resource.component[0]);
+                        message.h.resource.component[0]);
             END
             break;
 
-
         DEFAULT
-            ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
+            ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
-                    "Invalid API name", sbi_message.h.service.name);
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                    "Invalid API name", message.h.service.name);
         END
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
-        ogs_sbi_message_free(&sbi_message);
+        ogs_sbi_message_free(&message);
         break;
 
     case BSF_EVT_SBI_CLIENT:
         ogs_assert(e);
 
-        sbi_response = e->sbi.response;
-        ogs_assert(sbi_response);
-        rv = ogs_sbi_parse_response(&sbi_message, sbi_response);
+        response = e->sbi.response;
+        ogs_assert(response);
+        rv = ogs_sbi_parse_response(&message, response);
         if (rv != OGS_OK) {
             ogs_error("cannot parse HTTP response");
-            ogs_sbi_message_free(&sbi_message);
-            ogs_sbi_response_free(sbi_response);
+            ogs_sbi_message_free(&message);
+            ogs_sbi_response_free(response);
             break;
         }
 
-        if (strcmp(sbi_message.h.api.version, OGS_SBI_API_V1) != 0) {
-            ogs_error("Not supported version [%s]", sbi_message.h.api.version);
-            ogs_sbi_message_free(&sbi_message);
-            ogs_sbi_response_free(sbi_response);
+        if (strcmp(message.h.api.version, OGS_SBI_API_V1) != 0) {
+            ogs_error("Not supported version [%s]", message.h.api.version);
+            ogs_sbi_message_free(&message);
+            ogs_sbi_response_free(response);
             break;
         }
 
-        SWITCH(sbi_message.h.service.name)
+        SWITCH(message.h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
 
-            SWITCH(sbi_message.h.resource.component[0])
+            SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 nf_instance = e->sbi.data;
                 ogs_assert(nf_instance);
                 ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
-                e->sbi.message = &sbi_message;
+                e->sbi.message = &message;
                 ogs_fsm_dispatch(&nf_instance->sm, e);
                 break;
 
@@ -187,76 +208,75 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                 subscription = e->sbi.data;
                 ogs_assert(subscription);
 
-                SWITCH(sbi_message.h.method)
+                SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
-                        sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED ||
+                        message.res_status == OGS_SBI_HTTP_STATUS_OK) {
                         bsf_nnrf_handle_nf_status_subscribe(
-                                subscription, &sbi_message);
+                                subscription, &message);
                     } else {
                         ogs_error("HTTP response error : %d",
-                                sbi_message.res_status);
+                                message.res_status);
                     }
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (sbi_message.res_status ==
-                            OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                         ogs_sbi_subscription_remove(subscription);
                     } else {
                         ogs_error("HTTP response error : %d",
-                                sbi_message.res_status);
+                                message.res_status);
                     }
                     break;
 
                 DEFAULT
-                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
                     ogs_assert_if_reached();
                 END
                 break;
             
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[0]);
+                        message.h.resource.component[0]);
                 ogs_assert_if_reached();
             END
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
-            SWITCH(sbi_message.h.resource.component[0])
+            SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 sbi_xact = e->sbi.data;
                 ogs_assert(sbi_xact);
 
-                SWITCH(sbi_message.h.method)
+                SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
-                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
-                        bsf_nnrf_handle_nf_discover(sbi_xact, &sbi_message);
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK)
+                        bsf_nnrf_handle_nf_discover(sbi_xact, &message);
                     else
                         ogs_error("HTTP response error [%d]",
-                                sbi_message.res_status);
+                                message.res_status);
                     break;
 
                 DEFAULT
-                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
                     ogs_assert_if_reached();
                 END
                 break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.component[0]);
+                        message.h.resource.component[0]);
                 ogs_assert_if_reached();
             END
             break;
 
         DEFAULT
-            ogs_error("Invalid service name [%s]", sbi_message.h.service.name);
+            ogs_error("Invalid service name [%s]", message.h.service.name);
             ogs_assert_if_reached();
         END
 
-        ogs_sbi_message_free(&sbi_message);
-        ogs_sbi_response_free(sbi_response);
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
         break;
 
     case BSF_EVT_SBI_TIMER:

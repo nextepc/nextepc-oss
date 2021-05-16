@@ -24,6 +24,8 @@ libbsf_sources = files('''
     nnrf-handler.c
     nf-sm.c
 
+    nbsf-handler.c
+
     sbi-path.c
     bsf-sm.c
 

@@ -42,19 +42,8 @@ typedef struct bsf_context_s {
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
 
-#define BSF_UE_IS_LAST_SESSION(__sMF) \
-     ((__sMF) && (ogs_list_count(&(__sMF)->sess_list)) == 1)
-    ogs_list_t      bsf_ue_list;
+    ogs_list_t      sess_list;
 } bsf_context_t;
-
-typedef struct bsf_ue_s {
-    ogs_lnode_t lnode;
-
-    /* SUPI */
-    char *supi;
-
-    ogs_list_t sess_list;
-} bsf_ue_t;
 
 #define BSF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
     do { \
@@ -71,33 +60,17 @@ typedef struct bsf_ue_s {
         } \
         ogs_sbi_nf_instance_remove(_nFInstance); \
     } while(0)
-#define BSF_SESS_CLEAR(__sESS) \
-    do { \
-        bsf_ue_t *bsf_ue = NULL; \
-        ogs_assert(__sESS); \
-        bsf_ue = __sESS->bsf_ue; \
-        ogs_assert(bsf_ue); \
-        if (BSF_UE_IS_LAST_SESSION(bsf_ue)) \
-            bsf_ue_remove(bsf_ue); \
-        else \
-            bsf_sess_remove(__sESS); \
-    } while(0)
 
 typedef struct bsf_sess_s bsf_sess_t;
 
 typedef struct bsf_sess_s {
     ogs_sbi_object_t sbi;
-    ogs_fsm_t       sm;             /* A state machine */
 
-    uint64_t        smpolicycontrol_features; /* SBI features */
+    char *binding_id;
 
-    /* S_NSSAI */
     ogs_s_nssai_t s_nssai;
+    char *dnn;
 
-    /* PDN Configuration */
-    ogs_session_t session;
-
-    bsf_ue_t *bsf_ue;
 } bsf_sess_t;
 
 void bsf_context_init(void);
@@ -106,18 +79,12 @@ bsf_context_t *bsf_self(void);
 
 int bsf_context_parse_config(void);
 
-bsf_ue_t *bsf_ue_add_by_supi(char *supi);
-bsf_ue_t *bsf_ue_add_by_imsi(uint8_t *imsi, int imsi_len);
-void bsf_ue_remove(bsf_ue_t *bsf_ue);
-void bsf_ue_remove_all(void);
-bsf_ue_t *bsf_ue_find_by_supi(char *supi);
-
+bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
 void bsf_sess_remove(bsf_sess_t *sess);
-void bsf_sess_remove_all(bsf_ue_t *bsf_ue);
+void bsf_sess_remove_all(void);
 
-bsf_sess_t *bsf_sess_find(uint32_t index);
-bsf_sess_t *bsf_sess_find_by_ipv4(uint32_t addr);
-bsf_sess_t *bsf_sess_find_by_ipv6(uint32_t *addr6);
+bsf_sess_t *bsf_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
+bsf_sess_t *bsf_sess_find_by_binding_id(char *binding_id);
 
 void bsf_sess_select_nf(bsf_sess_t *sess, OpenAPI_nf_type_e nf_type);
 

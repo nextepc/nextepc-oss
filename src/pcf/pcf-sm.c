@@ -99,8 +99,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     break;
 
                 DEFAULT
-                    ogs_error("Invalid HTTP method [%s]",
-                            message.h.method);
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
                     ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method);

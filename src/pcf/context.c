@@ -182,6 +182,10 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
 
     if (pcf_ue->notification_uri)
         ogs_free(pcf_ue->notification_uri);
+    if (pcf_ue->gpsi)
+        ogs_free(pcf_ue->gpsi);
+    if (pcf_ue->pei)
+        ogs_free(pcf_ue->pei);
 
     ogs_pool_free(&pcf_ue_pool, pcf_ue);
 }
@@ -264,6 +268,9 @@ void pcf_sess_remove(pcf_sess_t *sess)
 
     ogs_assert(sess->sm_policy_id);
     ogs_free(sess->sm_policy_id);
+
+    if (sess->binding_id)
+        ogs_free(sess->binding_id);
 
     if (sess->dnn)
         ogs_free(sess->dnn);

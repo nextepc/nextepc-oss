@@ -71,6 +71,9 @@ struct pcf_ue_s {
     char *supi;
 
     char *notification_uri;
+    char *gpsi;
+    OpenAPI_access_type_e access_type;
+    char *pei;
 
     ogs_guami_t guami;
     OpenAPI_rat_type_e rat_type;
@@ -88,6 +91,10 @@ struct pcf_sess_s {
     ogs_fsm_t sm;
 
     char *sm_policy_id;
+
+    /* BSF sends the RESPONSE
+     * of [POST] /nbsf-management/v1/PcfBindings */
+    char *binding_id;
 
     uint8_t psi; /* PDU Session Identity */
 

@@ -33,6 +33,8 @@ bool pcf_nbsf_management_handle_register(
     ogs_sbi_header_t header;
     ogs_sbi_response_t *response = NULL;
 
+    ogs_sbi_message_t message;
+
     ogs_session_data_t session_data;
 
     ogs_assert(sess);
@@ -72,17 +74,46 @@ bool pcf_nbsf_management_handle_register(
 
         OpenAPI_list_t *PolicyCtrlReqTriggers = NULL;
 
-#if 0
-        if (!recvmsg->SmPolicyData) {
-            strerror = ogs_msprintf("[%s:%d] No SmPolicyData",
+        ogs_assert(pcf_ue->supi);
+        ogs_assert(sess->dnn);
+
+        if (!recvmsg->http.location) {
+            strerror = ogs_msprintf("[%s:%d] No http.location",
                     pcf_ue->supi, sess->psi);
             status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
             goto cleanup;
         }
-#endif
 
-        ogs_assert(pcf_ue->supi);
-        ogs_assert(sess->dnn);
+        if (!recvmsg->PcfBinding) {
+            strerror = ogs_msprintf("[%s:%d] No PcfBinding",
+                    pcf_ue->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+
+        memset(&header, 0, sizeof(header));
+        header.uri = recvmsg->http.location;
+
+        rv = ogs_sbi_parse_header(&message, &header);
+        if (rv != OGS_OK) {
+            strerror = ogs_msprintf("[%s:%d] Cannot parse http.location [%s]",
+                    pcf_ue->supi, sess->psi, recvmsg->http.location);
+            goto cleanup;
+        }
+
+        if (!message.h.resource.component[1]) {
+            strerror = ogs_msprintf("[%s:%d] No Binding ID [%s]",
+                    pcf_ue->supi, sess->psi, recvmsg->http.location);
+
+            ogs_sbi_header_free(&header);
+            goto cleanup;
+        }
+
+        if (sess->binding_id)
+            ogs_free(sess->binding_id);
+        sess->binding_id = ogs_strdup(message.h.resource.component[1]);
+
+        ogs_sbi_header_free(&header);
 
         rv = ogs_dbi_session_data(
                 pcf_ue->supi, &sess->s_nssai, sess->dnn, &session_data);

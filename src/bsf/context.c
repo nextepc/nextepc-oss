@@ -23,7 +23,6 @@ static bsf_context_t self;
 
 int __bsf_log_domain;
 
-static OGS_POOL(bsf_ue_pool, bsf_ue_t);
 static OGS_POOL(bsf_sess_pool, bsf_sess_t);
 
 static int context_initialized = 0;
@@ -37,7 +36,6 @@ void bsf_context_init(void)
 
     ogs_log_install_domain(&__bsf_log_domain, "bsf", ogs_core()->log.level);
 
-    ogs_pool_init(&bsf_ue_pool, ogs_app()->max.ue);
     ogs_pool_init(&bsf_sess_pool, ogs_app()->pool.sess);
 
     self.supi_hash = ogs_hash_make();
@@ -51,7 +49,7 @@ void bsf_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
-    bsf_ue_remove_all();
+    bsf_sess_remove_all();
 
     ogs_assert(self.supi_hash);
     ogs_hash_destroy(self.supi_hash);
@@ -60,7 +58,6 @@ void bsf_context_final(void)
     ogs_assert(self.ipv6_hash);
     ogs_hash_destroy(self.ipv6_hash);
 
-    ogs_pool_final(&bsf_ue_pool);
     ogs_pool_final(&bsf_sess_pool);
 
     context_initialized = 0;
@@ -119,63 +116,82 @@ int bsf_context_parse_config(void)
     return OGS_OK;
 }
 
-bsf_ue_t *bsf_ue_add_by_supi(char *supi)
+bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
 {
-    bsf_ue_t *bsf_ue = NULL;
+    bsf_sess_t *sess = NULL;
 
-    ogs_assert(supi);
+    ogs_assert(s_nssai);
+    ogs_assert(s_nssai->sst);
+    ogs_assert(dnn);
 
-    ogs_pool_alloc(&bsf_ue_pool, &bsf_ue);
-    ogs_assert(bsf_ue);
-    memset(bsf_ue, 0, sizeof *bsf_ue);
+    ogs_pool_alloc(&bsf_sess_pool, &sess);
+    ogs_assert(sess);
+    memset(sess, 0, sizeof *sess);
 
-    ogs_list_init(&bsf_ue->sess_list);
+    sess->s_nssai.sst = s_nssai->sst;
+    sess->s_nssai.sd.v = s_nssai->sd.v;
 
-    bsf_ue->supi = ogs_strdup(supi);
-    ogs_assert(bsf_ue->supi);
-    ogs_hash_set(self.supi_hash, bsf_ue->supi, strlen(bsf_ue->supi), bsf_ue);
+    sess->dnn = ogs_strdup(dnn);
+    ogs_assert(sess->dnn);
 
-    ogs_list_add(&self.bsf_ue_list, bsf_ue);
+    sess->binding_id = ogs_msprintf("%d",
+            (int)ogs_pool_index(&bsf_sess_pool, sess));
+    ogs_assert(sess->binding_id);
 
-    ogs_info("[Added] Number of BSF-UEs is now %d",
-            ogs_list_count(&self.bsf_ue_list));
+    ogs_list_add(&self.sess_list, sess);
 
-    return bsf_ue;
+    return sess;
 }
 
-void bsf_ue_remove(bsf_ue_t *bsf_ue)
+void bsf_sess_remove(bsf_sess_t *sess)
 {
-    ogs_assert(bsf_ue);
+    ogs_assert(sess);
 
-    ogs_list_remove(&self.bsf_ue_list, bsf_ue);
+    ogs_list_remove(&self.sess_list, sess);
 
-#if 0
-    bsf_sess_remove_all(bsf_ue);
-#endif
+    /* Free SBI object memory */
+    ogs_sbi_object_free(&sess->sbi);
 
-    if (bsf_ue->supi) {
-        ogs_hash_set(self.supi_hash, bsf_ue->supi, strlen(bsf_ue->supi), NULL);
-        ogs_free(bsf_ue->supi);
-    }
+    ogs_assert(sess->binding_id);
+    ogs_free(sess->binding_id);
 
-    ogs_pool_free(&bsf_ue_pool, bsf_ue);
+    ogs_assert(sess->dnn);
+    ogs_free(sess->dnn);
 
-    ogs_info("[Removed] Number of BSF-UEs is now %d",
-            ogs_list_count(&self.bsf_ue_list));
+    ogs_pool_free(&bsf_sess_pool, sess);
 }
 
-void bsf_ue_remove_all(void)
+void bsf_sess_remove_all(void)
 {
-    bsf_ue_t *bsf_ue = NULL, *next = NULL;;
+    bsf_sess_t *sess = NULL, *next_sess = NULL;
 
-    ogs_list_for_each_safe(&self.bsf_ue_list, next, bsf_ue)
-        bsf_ue_remove(bsf_ue);
+    ogs_list_for_each_safe(&self.sess_list, next_sess, sess)
+        bsf_sess_remove(sess);
 }
 
-bsf_ue_t *bsf_ue_find_by_supi(char *supi)
+bsf_sess_t *bsf_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
 {
-    ogs_assert(supi);
-    return (bsf_ue_t *)ogs_hash_get(self.supi_hash, supi, strlen(supi));
+    bsf_sess_t *sess = NULL;
+
+    ogs_assert(s_nssai);
+    ogs_assert(dnn);
+
+    ogs_list_for_each(&self.sess_list, sess)
+        if (sess->s_nssai.sst == s_nssai->sst) return sess;
+
+    return NULL;
+}
+
+bsf_sess_t *bsf_sess_find_by_binding_id(char *binding_id)
+{
+    bsf_sess_t *sess = NULL;
+
+    ogs_assert(binding_id);
+
+    ogs_list_for_each(&self.sess_list, sess)
+        if (!strcmp(sess->binding_id, binding_id)) return sess;
+
+    return NULL;
 }
 
 void bsf_sess_select_nf(bsf_sess_t *sess, OpenAPI_nf_type_e nf_type)

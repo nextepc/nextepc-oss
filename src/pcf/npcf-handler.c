@@ -71,6 +71,16 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         ogs_uint64_from_string(PolicyAssociationRequest->supp_feat);
     pcf_ue->am_policy_control_features &= supported_features;
 
+    if (pcf_ue->gpsi)
+        ogs_free(pcf_ue->gpsi);
+    pcf_ue->gpsi = ogs_strdup(PolicyAssociationRequest->gpsi);
+
+    pcf_ue->access_type = PolicyAssociationRequest->access_type;
+
+    if (pcf_ue->pei)
+        ogs_free(pcf_ue->pei);
+    pcf_ue->pei = ogs_strdup(PolicyAssociationRequest->pei);
+
     Guami = PolicyAssociationRequest->guami;
     if (Guami && Guami->amf_id &&
         Guami->plmn_id && Guami->plmn_id->mnc && Guami->plmn_id->mcc) {

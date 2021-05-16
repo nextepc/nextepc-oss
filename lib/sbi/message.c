@@ -155,6 +155,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->AuthorizedNetworkSliceInfo)
         OpenAPI_authorized_network_slice_info_free(
                 message->AuthorizedNetworkSliceInfo);
+    if (message->PcfBinding)
+        OpenAPI_pcf_binding_free(message->PcfBinding);
 
     for (i = 0; i < message->num_of_part; i++) {
         if (message->part[i].pkbuf)
@@ -835,6 +837,9 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_authorized_network_slice_info_convertToJSON(
                 message->AuthorizedNetworkSliceInfo);
         ogs_assert(item);
+    } else if (message->PcfBinding) {
+        item = OpenAPI_pcf_binding_convertToJSON(message->PcfBinding);
+        ogs_assert(item);
     }
 
     if (item) {
@@ -1473,6 +1478,67 @@ static int parse_json(ogs_sbi_message_t *message,
                     }
                 }
                 break;
+
+            DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[0]);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+                if (message->h.resource.component[1]) {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_PATCH)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            message->PcfBinding =
+                                OpenAPI_pcf_binding_parseFromJSON(item);
+                            if (!message->PcfBinding) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
+                    break;
+                } else {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        if (message->res_status == 0 ||
+                            message->res_status ==
+                                OGS_SBI_HTTP_STATUS_CREATED) {
+                            message->PcfBinding =
+                                OpenAPI_pcf_binding_parseFromJSON(item);
+                            if (!message->PcfBinding) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+
+                    CASE(OGS_SBI_HTTP_METHOD_GET)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            message->PcfBinding =
+                                OpenAPI_pcf_binding_parseFromJSON(item);
+                            if (!message->PcfBinding) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
+                    break;
+                }
 
             DEFAULT
                 rv = OGS_ERROR;
