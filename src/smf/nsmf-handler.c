@@ -347,11 +347,20 @@ bool smf_nsmf_handle_update_sm_context(
         /*********************************************************
          * Handle DEACTIVATED
          ********************************************************/
-            ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_session_modification_request(
-                    sess, stream,
-                    OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
-                    0));
+            if (ogs_list_count(&sess->bearer_list) == 0) {
+                /* If there is no Qos-Flow,
+                 * we assume that there is no PFCP context in the UPF.
+                 *
+                 * PFCP deactivation is skipped. */
+                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                        sess, stream, OpenAPI_up_cnx_state_DEACTIVATED);
+            } else {
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_session_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                        0));
+            }
 
         } else if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_ACTIVATING) {

@@ -361,7 +361,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     e->sbi.message = &message;
 
                     ogs_fsm_dispatch(&sess->sm, e);
-                    if (OGS_FSM_CHECK(&sess->sm, pcf_am_state_exception)) {
+                    if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
                         ogs_error("[%s:%d] State machine exception",
                                     pcf_ue->supi, sess->psi);
                         pcf_sess_remove(sess);
@@ -373,6 +373,47 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                             message.h.resource.component[3]);
                     ogs_assert_if_reached();
                 END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        message.h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+
+            SWITCH(message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+
+                sbi_xact = e->sbi.data;
+                ogs_assert(sbi_xact);
+
+                sess = (pcf_sess_t *)sbi_xact->sbi_object;
+                ogs_assert(sess);
+
+                e->sbi.data = sbi_xact->assoc_stream;
+
+                ogs_sbi_xact_remove(sbi_xact);
+
+                sess = pcf_sess_cycle(sess);
+                ogs_assert(sess);
+
+                pcf_ue = sess->pcf_ue;
+                ogs_assert(pcf_ue);
+                pcf_ue = pcf_ue_cycle(pcf_ue);
+                ogs_assert(pcf_ue);
+
+                e->sess = sess;
+                e->sbi.message = &message;
+
+                ogs_fsm_dispatch(&sess->sm, e);
+                if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
+                    ogs_error("[%s:%d] State machine exception",
+                                pcf_ue->supi, sess->psi);
+                    pcf_sess_remove(sess);
+                }
                 break;
 
             DEFAULT

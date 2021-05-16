@@ -117,6 +117,28 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+
+            SWITCH(sbi_message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+
+#if 0
+                ogs_fatal("asdfkljasdf");
+#endif
+
+            DEFAULT
+#if 0
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[0]);
+#endif
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
+                        sbi_message.h.resource.component[0]);
+            END
+            break;
+
+
         DEFAULT
             ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
             ogs_sbi_server_send_error(stream,

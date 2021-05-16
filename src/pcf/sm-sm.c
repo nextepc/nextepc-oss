@@ -22,6 +22,7 @@
 
 #include "npcf-handler.h"
 #include "nudr-handler.h"
+#include "nbsf-handler.h"
 
 void pcf_sm_state_initial(ogs_fsm_t *s, pcf_event_t *e)
 {
@@ -122,6 +123,21 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                             message->h.resource.component[1]);
                     ogs_assert_if_reached();
                 END
+                break;
+
+            DEFAULT
+                ogs_error("[%s:%d] Invalid resource name [%s]",
+                        pcf_ue->supi, sess->psi,
+                        message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+
+                pcf_nbsf_management_handle_register(sess, stream, message);
                 break;
 
             DEFAULT
