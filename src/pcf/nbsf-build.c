@@ -54,6 +54,10 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
     PcfBinding.snssai = &sNssai;
 
+    if (sess->management_features) {
+        PcfBinding.supp_feat = ogs_uint64_to_string(sess->management_features);
+    }
+
     message.PcfBinding = &PcfBinding;
 
     request = ogs_sbi_build_request(&message);
@@ -61,6 +65,8 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     
     if (sNssai.sd)
         ogs_free(sNssai.sd);
+    if (PcfBinding.supp_feat)
+        ogs_free(PcfBinding.supp_feat);
 
     return request;
 }

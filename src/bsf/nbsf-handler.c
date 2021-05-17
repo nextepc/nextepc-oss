@@ -35,6 +35,9 @@ bool bsf_nbsf_management_pcf_binding(
     ogs_sbi_header_t header;
     ogs_sbi_response_t *response = NULL;
 
+    OpenAPI_pcf_binding_t *PcfBinding = NULL;
+    uint64_t supported_features = 0;
+
     ogs_assert(stream);
     ogs_assert(recvmsg);
     server = ogs_sbi_server_from_stream(stream);
@@ -45,7 +48,9 @@ bool bsf_nbsf_management_pcf_binding(
         CASE(OGS_SBI_HTTP_METHOD_DELETE)
             ogs_fatal("DELETE");
             break;
+
         CASE(OGS_SBI_HTTP_METHOD_PATCH)
+            break;
 
         DEFAULT
             strerror = ogs_msprintf("Invalid HTTP method [%s]",
@@ -64,6 +69,17 @@ bool bsf_nbsf_management_pcf_binding(
             header.resource.component[0] =
                 (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
             header.resource.component[1] = sess->binding_id;
+
+            PcfBinding = recvmsg->PcfBinding;
+            ogs_assert(PcfBinding);
+
+            if (PcfBinding->supp_feat) {
+                supported_features =
+                    ogs_uint64_from_string(PcfBinding->supp_feat);
+                sess->management_features &= supported_features;
+            } else {
+                sess->management_features = 0;
+            }
 
             memset(&sendmsg, 0, sizeof(sendmsg));
             sendmsg.PcfBinding = recvmsg->PcfBinding;

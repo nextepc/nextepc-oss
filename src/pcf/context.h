@@ -78,7 +78,8 @@ struct pcf_ue_s {
     ogs_guami_t guami;
     OpenAPI_rat_type_e rat_type;
 
-    uint64_t am_policy_control_features; /* SBI Features */
+    /* SBI Features */
+    uint64_t am_policy_control_features;
 
     OpenAPI_policy_association_request_t *policy_association_request;
     OpenAPI_ambr_t *subscribed_ue_ambr;
@@ -103,7 +104,9 @@ struct pcf_sess_s {
     char *notification_uri;
     ogs_s_nssai_t s_nssai;
 
-    uint64_t smpolicycontrol_features; /* SBI Features */
+    /* SBI Features */
+    uint64_t smpolicycontrol_features;
+    uint64_t management_features;
 
     OpenAPI_ambr_t *subscribed_sess_ambr;
     OpenAPI_subscribed_default_qos_t *subscribed_default_qos;

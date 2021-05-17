@@ -125,8 +125,16 @@ bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
     ogs_assert(dnn);
 
     ogs_pool_alloc(&bsf_sess_pool, &sess);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("Maximum number of session[%lld] reached",
+            (long long)ogs_app()->pool.sess);
+        return NULL;
+    }
     memset(sess, 0, sizeof *sess);
+
+    /* SBI Features */
+    OGS_SBI_FEATURES_SET(sess->management_features,
+            OGS_SBI_NBSF_MANAGEMENT_BINDING_UPDATE);
 
     sess->s_nssai.sst = s_nssai->sst;
     sess->s_nssai.sd.v = s_nssai->sd.v;

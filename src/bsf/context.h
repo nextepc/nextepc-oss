@@ -71,6 +71,9 @@ typedef struct bsf_sess_s {
     ogs_s_nssai_t s_nssai;
     char *dnn;
 
+    /* SBI Features */
+    uint64_t management_features;
+
 } bsf_sess_t;
 
 void bsf_context_init(void);
