@@ -66,6 +66,9 @@ typedef struct bsf_sess_s bsf_sess_t;
 typedef struct bsf_sess_s {
     ogs_sbi_object_t sbi;
 
+    char *supi;
+    char *gpsi;
+
     char *binding_id;
 
     ogs_s_nssai_t s_nssai;

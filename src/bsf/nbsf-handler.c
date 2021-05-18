@@ -141,6 +141,17 @@ bool bsf_nbsf_management_pcf_binding(
                 }
             }
 
+            if (PcfBinding->supi) {
+                if (sess->supi)
+                    ogs_free(sess->supi);
+                sess->supi = ogs_strdup(PcfBinding->supi);
+            }
+            if (PcfBinding->gpsi) {
+                if (sess->gpsi)
+                    ogs_free(sess->gpsi);
+                sess->gpsi = ogs_strdup(PcfBinding->gpsi);
+            }
+
             memset(&header, 0, sizeof(header));
             header.service.name =
                 (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;

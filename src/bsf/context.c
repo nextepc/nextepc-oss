@@ -162,6 +162,11 @@ void bsf_sess_remove(bsf_sess_t *sess)
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 
+    if (sess->supi)
+        ogs_free(sess->supi);
+    if (sess->gpsi)
+        ogs_free(sess->gpsi);
+
     ogs_assert(sess->binding_id);
     ogs_free(sess->binding_id);
 
