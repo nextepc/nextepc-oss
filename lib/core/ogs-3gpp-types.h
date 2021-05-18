@@ -213,7 +213,8 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list);
 void ogs_sockaddr_to_ip(
         ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip);
 char *ogs_ipv4_to_string(uint32_t addr);
-char *ogs_ipv6_to_string(uint8_t *addr6);
+char *ogs_ipv6addr_to_string(uint8_t *addr6);
+char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen);
 
 /**************************************************
  * 8.14 PDN Address Allocation (PAA) */

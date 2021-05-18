@@ -162,13 +162,18 @@ void bsf_sess_remove(bsf_sess_t *sess)
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 
+    ogs_assert(sess->binding_id);
+    ogs_free(sess->binding_id);
+
     if (sess->supi)
         ogs_free(sess->supi);
     if (sess->gpsi)
         ogs_free(sess->gpsi);
 
-    ogs_assert(sess->binding_id);
-    ogs_free(sess->binding_id);
+    if (sess->ipv4addr)
+        ogs_free(sess->ipv4addr);
+    if (sess->ipv6prefix)
+        ogs_free(sess->ipv6prefix);
 
     ogs_assert(sess->dnn);
     ogs_free(sess->dnn);

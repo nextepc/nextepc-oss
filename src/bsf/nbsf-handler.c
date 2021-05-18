@@ -69,6 +69,14 @@ bool bsf_nbsf_management_pcf_binding(
             PcfBinding = recvmsg->PcfBinding;
             ogs_assert(PcfBinding);
 
+            if (!PcfBinding->ipv4_addr && !PcfBinding->ipv6_prefix) {
+                strerror = ogs_msprintf(
+                            "No IPv4 address or IPv6 prefix[%p:%p]",
+                            PcfBinding->ipv4_addr, PcfBinding->ipv6_prefix);
+                status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+                goto cleanup;
+            }
+
             if (!PcfBinding->pcf_fqdn && !PcfBinding->pcf_ip_end_points) {
                 strerror = ogs_msprintf("No PCF address information [%p:%p]",
                             PcfBinding->pcf_fqdn,
@@ -76,6 +84,13 @@ bool bsf_nbsf_management_pcf_binding(
                 status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
                 goto cleanup;
             }
+
+            if (sess->ipv4addr)
+                ogs_free(sess->ipv4addr);
+            sess->ipv4addr = ogs_strdup(PcfBinding->ipv4_addr);
+            if (sess->ipv6prefix)
+                ogs_free(sess->ipv6prefix);
+            sess->ipv6prefix = ogs_strdup(PcfBinding->ipv6_prefix);
 
             if (PcfBinding->pcf_fqdn) {
                 char fqdn[OGS_MAX_FQDN_LEN];

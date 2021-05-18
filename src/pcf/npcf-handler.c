@@ -163,6 +163,17 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
+    if (!SmPolicyContextData->ipv4_address &&
+        !SmPolicyContextData->ipv6_address_prefix) {
+        strerror = ogs_msprintf(
+                "[%s:%d] No IPv4 address[%p] or IPv6 prefix[%p]",
+                pcf_ue->supi, sess->psi,
+                SmPolicyContextData->ipv4_address,
+                SmPolicyContextData->ipv6_address_prefix);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
     sliceInfo = SmPolicyContextData->slice_info;
     if (!sliceInfo) {
         strerror = ogs_msprintf("[%s:%d] No sliceInfo",
@@ -188,6 +199,13 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
     sess->notification_uri = ogs_strdup(SmPolicyContextData->notification_uri);
+
+    if (sess->ipv4addr)
+        ogs_free(sess->ipv4addr);
+    sess->ipv4addr = ogs_strdup(SmPolicyContextData->ipv4_address);
+    if (sess->ipv6prefix)
+        ogs_free(sess->ipv6prefix);
+    sess->ipv6prefix = ogs_strdup(SmPolicyContextData->ipv6_address_prefix);
 
     sess->s_nssai.sst = sliceInfo->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sliceInfo->sd);

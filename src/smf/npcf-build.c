@@ -69,6 +69,14 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
     SmPolicyContextData.notification_uri = ogs_sbi_server_uri(server, &header);
     ogs_assert(SmPolicyContextData.notification_uri);
 
+    if (sess->ipv4)
+        SmPolicyContextData.ipv4_address =
+                ogs_ipv4_to_string(sess->ipv4->addr[0]);
+
+    if (sess->ipv6)
+        SmPolicyContextData.ipv6_address_prefix = ogs_ipv6prefix_to_string(
+                (uint8_t *)sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN);
+
     memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
     if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
                 OGS_SBI_NPCF_SMPOLICYCONTROL_DN_AUTHORIZATION)) {
@@ -136,6 +144,11 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 
     if (SmPolicyContextData.supp_feat)
         ogs_free(SmPolicyContextData.supp_feat);
+
+    if (SmPolicyContextData.ipv4_address)
+        ogs_free(SmPolicyContextData.ipv4_address);
+    if (SmPolicyContextData.ipv6_address_prefix)
+        ogs_free(SmPolicyContextData.ipv6_address_prefix);
 
     return request;
 }

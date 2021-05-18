@@ -280,6 +280,11 @@ void pcf_sess_remove(pcf_sess_t *sess)
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
 
+    if (sess->ipv4addr)
+        ogs_free(sess->ipv4addr);
+    if (sess->ipv6prefix)
+        ogs_free(sess->ipv6prefix);
+
     if (sess->subscribed_sess_ambr)
         OpenAPI_ambr_free(sess->subscribed_sess_ambr);
     if (sess->subscribed_default_qos)

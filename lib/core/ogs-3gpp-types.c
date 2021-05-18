@@ -462,7 +462,7 @@ char *ogs_ipv4_to_string(uint32_t addr)
     return (char*)OGS_INET_NTOP(&addr, buf);
 }
 
-char *ogs_ipv6_to_string(uint8_t *addr6)
+char *ogs_ipv6addr_to_string(uint8_t *addr6)
 {
     char *buf = NULL;
     ogs_assert(addr6);
@@ -471,6 +471,26 @@ char *ogs_ipv6_to_string(uint8_t *addr6)
     ogs_assert(buf);
 
     return (char *)OGS_INET6_NTOP(addr6, buf);
+}
+
+char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen)
+{
+    char *buf = NULL;
+    uint8_t tmp[OGS_IPV6_LEN];
+    ogs_assert(addr6);
+
+    memset(tmp, 0, OGS_IPV6_LEN);
+    memcpy(tmp, addr6, prefixlen >> 3);
+
+    buf = ogs_calloc(1, OGS_ADDRSTRLEN);
+    ogs_assert(buf);
+
+    if (OGS_INET6_NTOP(tmp, buf) == NULL) {
+        ogs_fatal("Invalid IPv6 address");
+        ogs_log_hexdump(OGS_LOG_FATAL, addr6, OGS_IPV6_LEN);
+        ogs_assert_if_reached();
+    }
+    return ogs_mstrcatf(buf, "/%d", prefixlen);
 }
 
 int ogs_sockaddr_to_user_plane_ip_resource_info(

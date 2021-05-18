@@ -102,6 +102,10 @@ struct pcf_sess_s {
     uint8_t pdu_session_type;
     char *dnn;
     char *notification_uri;
+
+    char *ipv4addr;
+    char *ipv6prefix;
+
     ogs_s_nssai_t s_nssai;
 
     /* SBI Features */

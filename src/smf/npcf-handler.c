@@ -404,9 +404,6 @@ bool smf_npcf_smpolicycontrol_handle_create(
     up2cp_far = sess->up2cp_far;
     ogs_assert(up2cp_far);
 
-    /* Set UE IP Address to the Default DL PDR */
-    smf_sess_set_ue_ip(sess);
-
     ogs_pfcp_paa_to_ue_ip_addr(&sess->session.paa,
             &dl_pdr->ue_ip_addr, &dl_pdr->ue_ip_addr_len);
     dl_pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
