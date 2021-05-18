@@ -59,8 +59,87 @@ bool bsf_nbsf_management_pcf_binding(
             goto cleanup;
         END
     } else {
+        OpenAPI_list_t *PcfIpEndPointList = NULL;
+        OpenAPI_lnode_t *node = NULL;
+        int i, rv;
+
         SWITCH(recvmsg->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
+
+            PcfBinding = recvmsg->PcfBinding;
+            ogs_assert(PcfBinding);
+
+            if (!PcfBinding->pcf_fqdn && !PcfBinding->pcf_ip_end_points) {
+                strerror = ogs_msprintf("No PCF address information [%p:%p]",
+                            PcfBinding->pcf_fqdn,
+                            PcfBinding->pcf_ip_end_points);
+                status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+                goto cleanup;
+            }
+
+            if (PcfBinding->pcf_fqdn) {
+                char fqdn[OGS_MAX_FQDN_LEN];
+
+                ogs_fqdn_parse(fqdn,
+                        PcfBinding->pcf_fqdn, strlen(PcfBinding->pcf_fqdn));
+
+                if (sess->pcf_fqdn)
+                    ogs_free(sess->pcf_fqdn);
+                sess->pcf_fqdn = ogs_strdup(fqdn);
+            }
+
+            PcfIpEndPointList = PcfBinding->pcf_ip_end_points;
+
+            for (i = 0; i < sess->num_of_addr; i++) {
+                if (sess->addr[i].ipv4)
+                    ogs_freeaddrinfo(sess->addr[i].ipv4);
+                if (sess->addr[i].ipv6)
+                    ogs_freeaddrinfo(sess->addr[i].ipv6);
+            }
+            sess->num_of_addr = 0;
+
+            OpenAPI_list_for_each(PcfIpEndPointList, node) {
+                OpenAPI_ip_end_point_t *IpEndPoint = node->data;
+                ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
+                int port = 0;
+
+                if (!IpEndPoint) continue;
+
+                if (sess->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
+                    port = IpEndPoint->port;
+                    if (!port) {
+                        if (ogs_sbi_default_uri_scheme() ==
+                                OpenAPI_uri_scheme_http)
+                            port = OGS_SBI_HTTP_PORT;
+                        else if (ogs_sbi_default_uri_scheme() ==
+                                OpenAPI_uri_scheme_https)
+                            port = OGS_SBI_HTTPS_PORT;
+                        else {
+                            ogs_fatal("Invalid scheme [%d]",
+                                ogs_sbi_default_uri_scheme());
+                            ogs_assert_if_reached();
+                        }
+                    }
+
+                    if (IpEndPoint->ipv4_address) {
+                        rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
+                                IpEndPoint->ipv4_address, port, 0);
+                        if (rv != OGS_OK) continue;
+                    }
+                    if (IpEndPoint->ipv6_address) {
+                        rv = ogs_getaddrinfo(&addr6, AF_UNSPEC,
+                                IpEndPoint->ipv6_address, port, 0);
+                        if (rv != OGS_OK) continue;
+                    }
+
+                    if (addr || addr6) {
+                        sess->addr[sess->num_of_addr].port = port;
+                        sess->addr[sess->num_of_addr].ipv4 = addr;
+                        sess->addr[sess->num_of_addr].ipv6 = addr6;
+                        sess->num_of_addr++;
+                    }
+                }
+            }
 
             memset(&header, 0, sizeof(header));
             header.service.name =
@@ -69,9 +148,6 @@ bool bsf_nbsf_management_pcf_binding(
             header.resource.component[0] =
                 (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
             header.resource.component[1] = sess->binding_id;
-
-            PcfBinding = recvmsg->PcfBinding;
-            ogs_assert(PcfBinding);
 
             if (PcfBinding->supp_feat) {
                 supported_features =
@@ -82,7 +158,7 @@ bool bsf_nbsf_management_pcf_binding(
             }
 
             memset(&sendmsg, 0, sizeof(sendmsg));
-            sendmsg.PcfBinding = recvmsg->PcfBinding;
+            sendmsg.PcfBinding = PcfBinding;
             sendmsg.http.location = ogs_sbi_server_uri(server, &header);
 
             response = ogs_sbi_build_response(

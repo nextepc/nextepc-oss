@@ -28,7 +28,15 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_pcf_binding_t PcfBinding;
+    OpenAPI_list_t *PcfIpEndPointList = NULL;
     OpenAPI_snssai_t sNssai;
+    OpenAPI_lnode_t *node = NULL;
+
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+    ogs_sbi_nf_service_t *nf_service = NULL;
+
+    int i, fqdn_len;
+    char fqdn[OGS_MAX_FQDN_LEN+1];
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
@@ -49,6 +57,45 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     ogs_assert(sess->dnn);
     PcfBinding.dnn = sess->dnn;
 
+    nf_instance = ogs_sbi_nf_instance_find(ogs_sbi_self()->nf_instance_id);
+    ogs_assert(nf_instance);
+    nf_service = ogs_list_first(&nf_instance->nf_service_list);
+    ogs_assert(nf_service);
+
+    if (strlen(nf_service->fqdn)) {
+        memset(fqdn, 0, sizeof(fqdn));
+        fqdn_len = ogs_fqdn_build(fqdn,
+                nf_service->fqdn, strlen(nf_service->fqdn));
+        PcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len);
+    }
+
+    PcfIpEndPointList = OpenAPI_list_create();
+    ogs_assert(PcfIpEndPointList);
+
+    for (i = 0; i < nf_service->num_of_addr; i++) {
+        ogs_sockaddr_t *ipv4 = NULL;
+        ogs_sockaddr_t *ipv6 = NULL;
+
+        OpenAPI_ip_end_point_t *IpEndPoint = NULL;
+
+        ipv4 = nf_service->addr[i].ipv4;
+        ipv6 = nf_service->addr[i].ipv6;
+
+        if (ipv4 || ipv6) {
+            IpEndPoint = ogs_calloc(1, sizeof(*IpEndPoint));
+            ogs_assert(IpEndPoint);
+            if (ipv4) IpEndPoint->ipv4_address = ogs_ipstrdup(ipv4);
+            if (ipv6) IpEndPoint->ipv6_address = ogs_ipstrdup(ipv6);
+            IpEndPoint->port = nf_service->addr[i].port;
+            OpenAPI_list_add(PcfIpEndPointList, IpEndPoint);
+        }
+    }
+
+    if (PcfIpEndPointList->count)
+        PcfBinding.pcf_ip_end_points = PcfIpEndPointList;
+    else
+        OpenAPI_list_free(PcfIpEndPointList);
+
     memset(&sNssai, 0, sizeof(sNssai));
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
@@ -65,8 +112,23 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     
     if (sNssai.sd)
         ogs_free(sNssai.sd);
+
     if (PcfBinding.supp_feat)
         ogs_free(PcfBinding.supp_feat);
+
+    OpenAPI_list_for_each(PcfBinding.pcf_ip_end_points, node) {
+        OpenAPI_ip_end_point_t *PcfIpEndPoint = node->data;
+        ogs_assert(PcfIpEndPoint);
+        if (PcfIpEndPoint->ipv4_address)
+            ogs_free(PcfIpEndPoint->ipv4_address);
+        if (PcfIpEndPoint->ipv6_address)
+            ogs_free(PcfIpEndPoint->ipv6_address);
+        ogs_free(PcfIpEndPoint);
+    }
+    OpenAPI_list_free(PcfBinding.pcf_ip_end_points);
+
+    if (PcfBinding.pcf_fqdn)
+        ogs_free(PcfBinding.pcf_fqdn);
 
     return request;
 }

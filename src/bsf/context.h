@@ -71,6 +71,16 @@ typedef struct bsf_sess_s {
     ogs_s_nssai_t s_nssai;
     char *dnn;
 
+    /* PCF address information */
+    char *pcf_fqdn;
+
+    int num_of_addr;
+    struct {
+        ogs_sockaddr_t *ipv4;
+        ogs_sockaddr_t *ipv6;
+        int port;
+    } addr[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
+
     /* SBI Features */
     uint64_t management_features;
 

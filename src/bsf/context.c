@@ -153,6 +153,8 @@ bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
 
 void bsf_sess_remove(bsf_sess_t *sess)
 {
+    int i;
+
     ogs_assert(sess);
 
     ogs_list_remove(&self.sess_list, sess);
@@ -165,6 +167,17 @@ void bsf_sess_remove(bsf_sess_t *sess)
 
     ogs_assert(sess->dnn);
     ogs_free(sess->dnn);
+
+    if (sess->pcf_fqdn)
+        ogs_free(sess->pcf_fqdn);
+
+    for (i = 0; i < sess->num_of_addr; i++) {
+        if (sess->addr[i].ipv4)
+            ogs_freeaddrinfo(sess->addr[i].ipv4);
+        if (sess->addr[i].ipv6)
+            ogs_freeaddrinfo(sess->addr[i].ipv6);
+    }
+    sess->num_of_addr = 0;
 
     ogs_pool_free(&bsf_sess_pool, sess);
 }
