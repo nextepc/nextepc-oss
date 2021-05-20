@@ -54,6 +54,8 @@ bool bsf_nbsf_management_pcf_binding(
             ogs_sbi_server_send_response(stream, response);
 
             ogs_free(sendmsg.http.location);
+
+            bsf_sess_remove(sess);
             break;
 
         CASE(OGS_SBI_HTTP_METHOD_PATCH)

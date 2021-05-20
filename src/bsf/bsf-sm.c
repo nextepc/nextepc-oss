@@ -140,10 +140,10 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                 }
 
                 if (!sess) {
-                    ogs_error("Not found [%s]", message.h.method);
+                    ogs_error("Not found [%s]", message.h.uri);
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                        &message, "Not found", message.h.method);
+                        &message, "Not found", message.h.uri);
                     break;
                 }
 
