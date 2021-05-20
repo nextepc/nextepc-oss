@@ -230,12 +230,23 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
         }
     }
 
+    SmPolicyDeleteData.serving_network =
+        ogs_sbi_build_plmn_id_nid(&sess->plmn_id);
+
     SmPolicyDeleteData.ran_nas_rel_causes = ranNasRelCauseList;
 
     message.SmPolicyDeleteData = &SmPolicyDeleteData;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
+
+    if (ueLocation.nr_location) {
+        if (ueLocation.nr_location->ue_location_timestamp)
+            ogs_free(ueLocation.nr_location->ue_location_timestamp);
+        ogs_sbi_free_nr_location(ueLocation.nr_location);
+    }
+    if (SmPolicyDeleteData.ue_time_zone)
+        ogs_free(SmPolicyDeleteData.ue_time_zone);
 
     OpenAPI_list_for_each(ranNasRelCauseList, node) {
         ranNasRelCause = node->data;
@@ -249,13 +260,8 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
 
     OpenAPI_list_free(ranNasRelCauseList);
 
-    if (ueLocation.nr_location) {
-        if (ueLocation.nr_location->ue_location_timestamp)
-            ogs_free(ueLocation.nr_location->ue_location_timestamp);
-        ogs_sbi_free_nr_location(ueLocation.nr_location);
-    }
-    if (SmPolicyDeleteData.ue_time_zone)
-        ogs_free(SmPolicyDeleteData.ue_time_zone);
+    if (SmPolicyDeleteData.serving_network)
+        ogs_sbi_free_plmn_id_nid(SmPolicyDeleteData.serving_network);
 
     return request;
 }
