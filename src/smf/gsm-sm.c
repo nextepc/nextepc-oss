@@ -52,8 +52,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
 
-    smf_npcf_smpolicycontrol_delete_param_t param;
-
     int state = 0;
 
     ogs_assert(s);
@@ -264,17 +262,21 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
-            memset(&param, 0, sizeof(param));
+            {
+                smf_npcf_smpolicycontrol_param_t param;
 
-            param.ran_nas_release.gsm_cause =
-                OGS_5GSM_CAUSE_REGULAR_DEACTIVATION;
-            param.ran_nas_release.ngap_cause.group = NGAP_Cause_PR_nas;
-            param.ran_nas_release.ngap_cause.value =
-                NGAP_CauseNas_normal_release;
+                memset(&param, 0, sizeof(param));
 
-            smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-                    OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param,
-                    smf_npcf_smpolicycontrol_build_delete);
+                param.ran_nas_release.gsm_cause =
+                    OGS_5GSM_CAUSE_REGULAR_DEACTIVATION;
+                param.ran_nas_release.ngap_cause.group = NGAP_Cause_PR_nas;
+                param.ran_nas_release.ngap_cause.value =
+                    NGAP_CauseNas_normal_release;
+
+                smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
+                        OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, &param,
+                        smf_npcf_smpolicycontrol_build_delete);
+            }
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:

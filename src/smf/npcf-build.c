@@ -156,7 +156,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
         smf_sess_t *sess, void *data)
 {
-    smf_npcf_smpolicycontrol_delete_param_t *param = data;
+    smf_npcf_smpolicycontrol_param_t *param = data;
 
     smf_ue_t *smf_ue = NULL;
 
@@ -166,6 +166,7 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
     OpenAPI_sm_policy_delete_data_t SmPolicyDeleteData;
     OpenAPI_list_t *ranNasRelCauseList = NULL;
     OpenAPI_ran_nas_rel_cause_t *ranNasRelCause = NULL;
+    OpenAPI_user_location_t ueLocation;
     OpenAPI_lnode_t *node = NULL;
 
     ogs_assert(sess);
@@ -183,6 +184,8 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
     message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_DELETE;
 
     memset(&SmPolicyDeleteData, 0, sizeof(SmPolicyDeleteData));
+
+    memset(&ueLocation, 0, sizeof(ueLocation));
 
     if (param) {
         if (param->ran_nas_release.gmm_cause ||
@@ -211,6 +214,20 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
 
             OpenAPI_list_add(ranNasRelCauseList, ranNasRelCause);
         }
+
+        if (param->ue_location) {
+            ueLocation.nr_location = ogs_sbi_build_nr_location(
+                    &sess->nr_tai, &sess->nr_cgi);
+            ogs_assert(ueLocation.nr_location);
+            ueLocation.nr_location->ue_location_timestamp =
+                ogs_sbi_gmtime_string(sess->ue_location_timestamp);
+
+            SmPolicyDeleteData.user_location_info = &ueLocation;
+        }
+        if (param->ue_timezone) {
+            SmPolicyDeleteData.ue_time_zone =
+                ogs_sbi_timezone_string(ogs_timezone());
+        }
     }
 
     SmPolicyDeleteData.ran_nas_rel_causes = ranNasRelCauseList;
@@ -231,6 +248,14 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
     }
 
     OpenAPI_list_free(ranNasRelCauseList);
+
+    if (ueLocation.nr_location) {
+        if (ueLocation.nr_location->ue_location_timestamp)
+            ogs_free(ueLocation.nr_location->ue_location_timestamp);
+        ogs_sbi_free_nr_location(ueLocation.nr_location);
+    }
+    if (SmPolicyDeleteData.ue_time_zone)
+        ogs_free(SmPolicyDeleteData.ue_time_zone);
 
     return request;
 }
