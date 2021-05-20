@@ -102,6 +102,7 @@ bsf_sess_t *bsf_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
 void bsf_sess_remove(bsf_sess_t *sess);
 void bsf_sess_remove_all(void);
 
+bsf_sess_t *bsf_sess_find(uint32_t index);
 bsf_sess_t *bsf_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
 bsf_sess_t *bsf_sess_find_by_binding_id(char *binding_id);
 

@@ -152,6 +152,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_sm_policy_decision_free(message->SmPolicyDecision);
     if (message->SmPolicyData)
         OpenAPI_sm_policy_data_free(message->SmPolicyData);
+    if (message->SmPolicyDeleteData)
+        OpenAPI_sm_policy_delete_data_free(message->SmPolicyDeleteData);
     if (message->AuthorizedNetworkSliceInfo)
         OpenAPI_authorized_network_slice_info_free(
                 message->AuthorizedNetworkSliceInfo);
@@ -833,6 +835,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->SmPolicyData) {
         item = OpenAPI_sm_policy_data_convertToJSON(message->SmPolicyData);
         ogs_assert(item);
+    } else if (message->SmPolicyDeleteData) {
+        item = OpenAPI_sm_policy_delete_data_convertToJSON(
+                message->SmPolicyDeleteData);
+        ogs_assert(item);
     } else if (message->AuthorizedNetworkSliceInfo) {
         item = OpenAPI_authorized_network_slice_info_convertToJSON(
                 message->AuthorizedNetworkSliceInfo);
@@ -1441,20 +1447,42 @@ static int parse_json(ogs_sbi_message_t *message,
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
-                if (message->res_status == 0) {
-                    message->SmPolicyContextData =
-                        OpenAPI_sm_policy_context_data_parseFromJSON(item);
-                    if (!message->SmPolicyContextData) {
-                        rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
+                if (!message->h.resource.component[1]) {
+                    if (message->res_status == 0) {
+                        message->SmPolicyContextData =
+                            OpenAPI_sm_policy_context_data_parseFromJSON(item);
+                        if (!message->SmPolicyContextData) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else if (message->res_status ==
+                            OGS_SBI_HTTP_STATUS_CREATED) {
+                        message->SmPolicyDecision =
+                            OpenAPI_sm_policy_decision_parseFromJSON(item);
+                        if (!message->SmPolicyDecision) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
                     }
-                } else if (message->res_status == OGS_SBI_HTTP_STATUS_CREATED) {
-                    message->SmPolicyDecision =
-                        OpenAPI_sm_policy_decision_parseFromJSON(item);
-                    if (!message->SmPolicyDecision) {
+                } else {
+                    SWITCH(message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                        if (message->res_status == 0) {
+                            message->SmPolicyDeleteData =
+                                OpenAPI_sm_policy_delete_data_parseFromJSON(
+                                        item);
+                            if (!message->SmPolicyDeleteData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    DEFAULT
                         rv = OGS_ERROR;
-                        ogs_error("JSON parse error");
-                    }
+                        ogs_error("Unknown resource name [%s]",
+                                message->h.resource.component[2]);
+                    END
+                    break;
                 }
                 break;
 

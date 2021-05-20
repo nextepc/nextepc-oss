@@ -46,7 +46,14 @@ bool bsf_nbsf_management_pcf_binding(
     if (recvmsg->h.resource.component[1]) {
         SWITCH(recvmsg->h.method)
         CASE(OGS_SBI_HTTP_METHOD_DELETE)
-            ogs_fatal("DELETE");
+            memset(&sendmsg, 0, sizeof(sendmsg));
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_sbi_server_send_response(stream, response);
+
+            ogs_free(sendmsg.http.location);
             break;
 
         CASE(OGS_SBI_HTTP_METHOD_PATCH)

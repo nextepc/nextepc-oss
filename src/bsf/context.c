@@ -200,6 +200,11 @@ void bsf_sess_remove_all(void)
         bsf_sess_remove(sess);
 }
 
+bsf_sess_t *bsf_sess_find(uint32_t index)
+{
+    return ogs_pool_find(&bsf_sess_pool, index);
+}
+
 bsf_sess_t *bsf_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
 {
     bsf_sess_t *sess = NULL;
@@ -215,14 +220,8 @@ bsf_sess_t *bsf_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
 
 bsf_sess_t *bsf_sess_find_by_binding_id(char *binding_id)
 {
-    bsf_sess_t *sess = NULL;
-
     ogs_assert(binding_id);
-
-    ogs_list_for_each(&self.sess_list, sess)
-        if (!strcmp(sess->binding_id, binding_id)) return sess;
-
-    return NULL;
+    return bsf_sess_find(atoll(binding_id));
 }
 
 void bsf_sess_select_nf(bsf_sess_t *sess, OpenAPI_nf_type_e nf_type)

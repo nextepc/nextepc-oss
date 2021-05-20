@@ -135,3 +135,30 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
 
     return request;
 }
+
+ogs_sbi_request_t *pcf_nbsf_management_build_de_register(
+        pcf_sess_t *sess, void *data)
+{
+    pcf_ue_t *pcf_ue = NULL;
+
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(sess);
+    pcf_ue = sess->pcf_ue;
+    ogs_assert(pcf_ue);
+    ogs_assert(sess->binding_id);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
+    message.h.resource.component[1] = sess->binding_id;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    return request;
+}

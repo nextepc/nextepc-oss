@@ -152,3 +152,37 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 
     return request;
 }
+
+ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
+        smf_sess_t *sess, void *data)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_sm_policy_delete_data_t SmPolicyDeleteData;
+
+    ogs_assert(sess);
+    ogs_assert(sess->sm_context_ref);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+    ogs_assert(sess->policy_association_id);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_POLICIES;
+    message.h.resource.component[1] = sess->policy_association_id;
+    message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_DELETE;
+
+    memset(&SmPolicyDeleteData, 0, sizeof(SmPolicyDeleteData));
+
+    message.SmPolicyDeleteData = &SmPolicyDeleteData;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    return request;
+}

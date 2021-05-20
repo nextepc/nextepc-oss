@@ -303,16 +303,15 @@ void pcf_sess_remove_all(pcf_ue_t *pcf_ue)
         pcf_sess_remove(sess);
 }
 
-pcf_sess_t *pcf_sess_find_by_sm_policy_id(pcf_ue_t *pcf_ue, char *sm_policy_id)
+pcf_sess_t *pcf_sess_find(uint32_t index)
 {
-    pcf_sess_t *sess = NULL;
+    return ogs_pool_find(&pcf_sess_pool, index);
+}
 
+pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id)
+{
     ogs_assert(sm_policy_id);
-
-    ogs_list_for_each(&pcf_ue->sess_list, sess)
-        if (!strcmp(sess->sm_policy_id, sm_policy_id)) return sess;
-
-    return NULL;
+    return pcf_sess_find(atoll(sm_policy_id));
 }
 
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi)

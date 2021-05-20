@@ -143,6 +143,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_POLICIES              "policies"
 #define OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL   "npcf-smpolicycontrol"
 #define OGS_SBI_RESOURCE_NAME_SM_POLICIES           "sm-policies"
+#define OGS_SBI_RESOURCE_NAME_DELETE                "delete"
 
 #define OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION      "nnssf-nsselection"
 #define OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION \
@@ -354,6 +355,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_sm_policy_context_data_t *SmPolicyContextData;
     OpenAPI_sm_policy_decision_t *SmPolicyDecision;
     OpenAPI_sm_policy_data_t *SmPolicyData;
+    OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData;
     OpenAPI_authorized_network_slice_info_t *AuthorizedNetworkSliceInfo;
     OpenAPI_pcf_binding_t *PcfBinding;
 

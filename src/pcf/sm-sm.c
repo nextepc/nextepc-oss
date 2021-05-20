@@ -67,25 +67,39 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         stream = e->sbi.data;
         ogs_assert(stream);
 
-        SWITCH(message->h.method)
-        CASE(OGS_SBI_HTTP_METHOD_POST)
+        if (!message->h.resource.component[1]) {
             handled = pcf_npcf_smpolicycontrtol_handle_create(
                     sess, stream, message);
             if (!handled) {
-                ogs_error("[%s:%d] Cannot handle SBI message",
+                ogs_error("[%s:%d] "
+                        "pcf_npcf_smpolicycontrtol_handle_create() failed",
                         pcf_ue->supi, sess->psi);
                 OGS_FSM_TRAN(s, pcf_sm_state_exception);
             }
             break;
 
-        DEFAULT
-            ogs_error("[%s:%d] Invalid HTTP method [%s]",
-                    pcf_ue->supi, sess->psi, message->h.method);
-            ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
-                    "Invalid HTTP method", message->h.method);
-        END
-        break;
+        } else {
+            SWITCH(message->h.resource.component[2])
+            CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                handled = pcf_npcf_smpolicycontrtol_handle_delete(
+                        sess, stream, message);
+                if (!handled) {
+                    ogs_error("[%s:%d] "
+                            "pcf_npcf_smpolicycontrtol_handle_delete() failed",
+                            pcf_ue->supi, sess->psi);
+                    OGS_FSM_TRAN(s, pcf_sm_state_exception);
+                }
+                break;
+
+            DEFAULT
+                ogs_error("[%s:%d] Invalid HTTP URI [%s]",
+                        pcf_ue->supi, sess->psi, message->h.uri);
+                ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
+                        "Invalid HTTP method", message->h.uri);
+            END
+            break;
+        }
 
     case PCF_EVT_SBI_CLIENT:
         message = e->sbi.message;
@@ -136,8 +150,30 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
-
-                pcf_nbsf_management_handle_register(sess, stream, message);
+                if (message->h.resource.component[1]) {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                        pcf_nbsf_management_handle_de_register(
+                                sess, stream, message);
+                        break;
+                    DEFAULT
+                        ogs_error("[%s:%d] Unknown method [%s]",
+                                pcf_ue->supi, sess->psi, message->h.method);
+                        ogs_assert_if_reached();
+                    END
+                    break;
+                } else {
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        pcf_nbsf_management_handle_register(
+                                sess, stream, message);
+                        break;
+                    DEFAULT
+                        ogs_error("[%s:%d] Unknown method [%s]",
+                                pcf_ue->supi, sess->psi, message->h.method);
+                        ogs_assert_if_reached();
+                    END
+                }
                 break;
 
             DEFAULT

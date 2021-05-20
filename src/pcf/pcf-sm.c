@@ -154,23 +154,28 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
-            SWITCH(message.h.method)
-            CASE(OGS_SBI_HTTP_METHOD_POST)
-                if (message.SmPolicyContextData &&
-                    message.SmPolicyContextData->supi) {
-                    pcf_ue = pcf_ue_find_by_supi(
-                                message.SmPolicyContextData->supi);
-                    if (pcf_ue) {
-                        if (message.SmPolicyContextData->pdu_session_id) {
-                            sess = pcf_sess_find_by_psi(pcf_ue, 
-                                message.SmPolicyContextData->pdu_session_id);
-                            if (!sess) {
-                                sess = pcf_sess_add(pcf_ue,
-                                message.SmPolicyContextData->pdu_session_id);
-                                ogs_assert(sess);
+            SWITCH(message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
+                if (!message.h.resource.component[1]) {
+                    if (message.SmPolicyContextData &&
+                        message.SmPolicyContextData->supi) {
+                        pcf_ue = pcf_ue_find_by_supi(
+                                    message.SmPolicyContextData->supi);
+                        if (pcf_ue) {
+                            if (message.SmPolicyContextData->pdu_session_id) {
+                                sess = pcf_sess_find_by_psi(pcf_ue, message.
+                                        SmPolicyContextData->pdu_session_id);
+                                if (!sess) {
+                                    sess = pcf_sess_add(pcf_ue, message.
+                                        SmPolicyContextData->pdu_session_id);
+                                    ogs_assert(sess);
+                                }
                             }
                         }
                     }
+                } else {
+                    sess = pcf_sess_find_by_sm_policy_id(
+                            message.h.resource.component[1]);
                 }
                 break;
 
@@ -178,10 +183,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
 
             if (!sess) {
-                ogs_error("Not found [%s]", message.h.method);
+                ogs_error("Not found [%s]", message.h.uri);
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                    &message, "Not found", message.h.method);
+                    &message, "Not found", message.h.uri);
                 break;
             }
 

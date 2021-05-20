@@ -232,3 +232,40 @@ cleanup:
 
     return false;
 }
+
+bool pcf_npcf_smpolicycontrtol_handle_delete(pcf_sess_t *sess,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+{
+    int status = 0;
+    char *strerror = NULL;
+    pcf_ue_t *pcf_ue = NULL;
+
+    OpenAPI_sm_policy_delete_data_t *SmPolicyDeleteData = NULL;
+
+    ogs_assert(sess);
+    pcf_ue = sess->pcf_ue;
+    ogs_assert(stream);
+    ogs_assert(message);
+
+    SmPolicyDeleteData = message->SmPolicyDeleteData;
+    if (!SmPolicyDeleteData) {
+        strerror = ogs_msprintf("[%s:%d] No SmPolicyDeleteData",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_BSF, sess, stream, NULL,
+            pcf_nbsf_management_build_de_register);
+
+    return true;
+
+cleanup:
+    ogs_assert(status);
+    ogs_assert(strerror);
+    ogs_error("%s", strerror);
+    ogs_sbi_server_send_error(stream, status, message, strerror, NULL);
+    ogs_free(strerror);
+
+    return false;
+}

@@ -28,6 +28,8 @@ extern "C" {
 
 bool pcf_nbsf_management_handle_register(
     pcf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+bool pcf_nbsf_management_handle_de_register(
+    pcf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

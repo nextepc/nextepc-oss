@@ -28,6 +28,8 @@ extern "C" {
 
 ogs_sbi_request_t *pcf_nbsf_management_build_register(
         pcf_sess_t *sess, void *data);
+ogs_sbi_request_t *pcf_nbsf_management_build_de_register(
+        pcf_sess_t *sess, void *data);
 
 #ifdef __cplusplus
 }

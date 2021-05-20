@@ -134,7 +134,8 @@ pcf_ue_t *pcf_ue_find_by_association_id(char *association_id);
 pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi);
 void pcf_sess_remove(pcf_sess_t *sess);
 void pcf_sess_remove_all(pcf_ue_t *pcf_ue);
-pcf_sess_t *pcf_sess_find_by_sm_policy_id(pcf_ue_t *pcf_ue, char *sm_policy_id);
+pcf_sess_t *pcf_sess_find(uint32_t index);
+pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id);
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi);
 pcf_sess_t *pcf_sess_find_by_dnn(pcf_ue_t *pcf_ue, char *dnn);
 
