@@ -263,7 +263,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
             smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-                    OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED, NULL,
+                    (char *)OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED,
                     smf_npcf_smpolicycontrol_build_delete);
             break;
 

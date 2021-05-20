@@ -138,7 +138,7 @@ void smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 }
 
 void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data,
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data))
 {
     ogs_sbi_xact_t *xact = NULL;
@@ -164,7 +164,7 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         return;
     }
 
-    xact->state = state;
+    xact->state = (uintptr_t)data;
     xact->assoc_stream = stream;
 
     if (ogs_sbi_discover_and_send(xact,

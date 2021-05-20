@@ -65,7 +65,7 @@ int gsm_handle_pdu_session_establishment_request(
     }
 
     smf_sbi_discover_and_send(OpenAPI_nf_type_UDM, sess, stream,
-                0, (char *)OGS_SBI_RESOURCE_NAME_SM_DATA,
+                (char *)OGS_SBI_RESOURCE_NAME_SM_DATA,
                 smf_nudm_sdm_build_get);
 
     return OGS_OK;
