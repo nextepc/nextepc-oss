@@ -549,7 +549,7 @@ bool smf_nsmf_handle_update_sm_context(
         }
     } else if (SmContextUpdateData->release) {
         smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-                (char *)OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT,
+                OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT, NULL,
                 smf_npcf_smpolicycontrol_build_delete);
     } else {
         ogs_error("[%s:%d] No UpdateData", smf_ue->supi, sess->psi);
@@ -599,7 +599,7 @@ bool smf_nsmf_handle_release_sm_context(
     }
 
     smf_sbi_discover_and_send(OpenAPI_nf_type_PCF, sess, stream,
-            (char *)OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT,
+            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT, NULL,
             smf_npcf_smpolicycontrol_build_delete);
 
     return true;

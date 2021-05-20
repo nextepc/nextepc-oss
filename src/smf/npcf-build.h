@@ -26,6 +26,18 @@
 extern "C" {
 #endif
 
+typedef struct smf_npcf_smpolicycontrol_delete_param_s {
+    struct {
+        struct {
+            int group;
+            int value;
+        } ngap_cause;
+        int gmm_cause;
+        int gsm_cause;
+    } ran_nas_release;
+    OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause;
+} smf_npcf_smpolicycontrol_delete_param_t;
+
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         smf_sess_t *sess, void *data);
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(

@@ -156,12 +156,17 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
 ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
         smf_sess_t *sess, void *data)
 {
+    smf_npcf_smpolicycontrol_delete_param_t *param = data;
+
     smf_ue_t *smf_ue = NULL;
 
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_sm_policy_delete_data_t SmPolicyDeleteData;
+    OpenAPI_list_t *ranNasRelCauseList = NULL;
+    OpenAPI_ran_nas_rel_cause_t *ranNasRelCause = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     ogs_assert(sess);
     ogs_assert(sess->sm_context_ref);
@@ -179,10 +184,53 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_delete(
 
     memset(&SmPolicyDeleteData, 0, sizeof(SmPolicyDeleteData));
 
+    if (param) {
+        if (param->ran_nas_release.gmm_cause ||
+            param->ran_nas_release.gsm_cause ||
+            param->ran_nas_release.ngap_cause.group) {
+
+            ranNasRelCause = ogs_calloc(1, sizeof(*ranNasRelCause));
+            ogs_expect_or_return_val(ranNasRelCause, NULL);
+
+            ranNasRelCauseList = OpenAPI_list_create();
+            ogs_expect_or_return_val(ranNasRelCauseList, NULL);
+
+            if (param->ran_nas_release.ngap_cause.group) {
+                OpenAPI_ng_ap_cause_t *ngApCause = NULL;
+
+                ranNasRelCause->ng_ap_cause = ngApCause =
+                    ogs_calloc(1, sizeof(*ngApCause));
+                ogs_expect_or_return_val(ngApCause, NULL);
+
+                ngApCause->group = param->ran_nas_release.ngap_cause.group;
+                ngApCause->value = param->ran_nas_release.ngap_cause.value;
+            }
+
+            ranNasRelCause->_5g_mm_cause = param->ran_nas_release.gmm_cause;
+            ranNasRelCause->_5g_sm_cause = param->ran_nas_release.gsm_cause;
+
+            OpenAPI_list_add(ranNasRelCauseList, ranNasRelCause);
+        }
+    }
+
+    SmPolicyDeleteData.ran_nas_rel_causes = ranNasRelCauseList;
+
     message.SmPolicyDeleteData = &SmPolicyDeleteData;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
+
+    OpenAPI_list_for_each(ranNasRelCauseList, node) {
+        ranNasRelCause = node->data;
+        if (ranNasRelCause) {
+            if (ranNasRelCause->ng_ap_cause) {
+                ogs_free(ranNasRelCause->ng_ap_cause);
+            }
+            ogs_free(ranNasRelCause);
+        }
+    }
+
+    OpenAPI_list_free(ranNasRelCauseList);
 
     return request;
 }
