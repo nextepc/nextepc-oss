@@ -169,6 +169,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                                     sess = pcf_sess_add(pcf_ue, message.
                                         SmPolicyContextData->pdu_session_id);
                                     ogs_assert(sess);
+                                    ogs_debug("[%s:%d] PCF session added",
+                                                pcf_ue->supi, sess->psi);
                                 }
                             }
                         }
@@ -415,6 +417,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 ogs_fsm_dispatch(&sess->sm, e);
                 if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_exception)) {
                     ogs_error("[%s:%d] State machine exception",
+                                pcf_ue->supi, sess->psi);
+                    pcf_sess_remove(sess);
+                } else if (OGS_FSM_CHECK(&sess->sm, pcf_sm_state_deleted)) {
+                    ogs_debug("[%s:%d] PCF session removed",
                                 pcf_ue->supi, sess->psi);
                     pcf_sess_remove(sess);
                 }

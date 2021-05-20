@@ -153,8 +153,16 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 if (message->h.resource.component[1]) {
                     SWITCH(message->h.method)
                     CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                        pcf_nbsf_management_handle_de_register(
+                        handled = pcf_nbsf_management_handle_de_register(
                                 sess, stream, message);
+                        if (!handled) {
+                            ogs_error("[%s:%d] pcf_nbsf_management_handle_"
+                                    "de_register() failed",
+                                    pcf_ue->supi, sess->psi);
+                            OGS_FSM_TRAN(s, pcf_sm_state_exception);
+                        } else {
+                            OGS_FSM_TRAN(s, pcf_sm_state_deleted);
+                        }
                         break;
                     DEFAULT
                         ogs_error("[%s:%d] Unknown method [%s]",
@@ -191,6 +199,35 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
                     "Invalid API name", message->h.resource.component[0]);
         END
+        break;
+
+    default:
+        ogs_error("[%s:%d] Unknown event %s",
+                pcf_ue->supi, sess->psi, pcf_event_get_name(e));
+        break;
+    }
+}
+
+void pcf_sm_state_deleted(ogs_fsm_t *s, pcf_event_t *e)
+{
+    pcf_ue_t *pcf_ue = NULL;
+    pcf_sess_t *sess = NULL;
+
+    ogs_assert(s);
+    ogs_assert(e);
+
+    pcf_sm_debug(e);
+
+    sess = e->sess;
+    ogs_assert(sess);
+    pcf_ue = sess->pcf_ue;
+    ogs_assert(pcf_ue);
+
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
+    case OGS_FSM_EXIT_SIG:
         break;
 
     default:
