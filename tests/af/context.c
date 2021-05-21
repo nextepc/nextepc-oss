@@ -116,35 +116,24 @@ int af_context_parse_config(void)
     return OGS_OK;
 }
 
-af_sess_t *af_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
+af_sess_t *af_sess_add_by_ue_address(char *ipv4addr, char *ipv6prefix)
 {
     af_sess_t *sess = NULL;
 
-    ogs_assert(s_nssai);
-    ogs_assert(s_nssai->sst);
-    ogs_assert(dnn);
+    ogs_assert(ipv4addr || ipv6prefix);
 
     ogs_pool_alloc(&af_sess_pool, &sess);
-    if (!sess) {
-        ogs_error("Maximum number of session[%lld] reached",
-            (long long)ogs_app()->pool.sess);
-        return NULL;
-    }
+    ogs_expect_or_return_val(sess, NULL);
     memset(sess, 0, sizeof *sess);
 
-    /* SBI Features */
-    OGS_SBI_FEATURES_SET(sess->management_features,
-            OGS_SBI_NBSF_MANAGEMENT_BINDING_UPDATE);
-
-    sess->s_nssai.sst = s_nssai->sst;
-    sess->s_nssai.sd.v = s_nssai->sd.v;
-
-    sess->dnn = ogs_strdup(dnn);
-    ogs_assert(sess->dnn);
-
-    sess->binding_id = ogs_msprintf("%d",
-            (int)ogs_pool_index(&af_sess_pool, sess));
-    ogs_assert(sess->binding_id);
+    if (ipv4addr) {
+        sess->ipv4addr = ogs_strdup(ipv4addr);
+        ogs_expect_or_return_val(sess->ipv4addr, NULL);
+    }
+    if (ipv6prefix) {
+        sess->ipv6prefix = ogs_strdup(ipv6prefix);
+        ogs_expect_or_return_val(sess->ipv6prefix, NULL);
+    }
 
     ogs_list_add(&self.sess_list, sess);
 
@@ -153,8 +142,6 @@ af_sess_t *af_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
 
 void af_sess_remove(af_sess_t *sess)
 {
-    int i;
-
     ogs_assert(sess);
 
     ogs_list_remove(&self.sess_list, sess);
@@ -162,32 +149,18 @@ void af_sess_remove(af_sess_t *sess)
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
 
-    ogs_assert(sess->binding_id);
-    ogs_free(sess->binding_id);
+    if (sess->ipv4addr)
+        ogs_free(sess->ipv4addr);
+    if (sess->ipv6prefix)
+        ogs_free(sess->ipv6prefix);
 
     if (sess->supi)
         ogs_free(sess->supi);
     if (sess->gpsi)
         ogs_free(sess->gpsi);
 
-    if (sess->ipv4addr)
-        ogs_free(sess->ipv4addr);
-    if (sess->ipv6prefix)
-        ogs_free(sess->ipv6prefix);
-
-    ogs_assert(sess->dnn);
-    ogs_free(sess->dnn);
-
-    if (sess->pcf_fqdn)
-        ogs_free(sess->pcf_fqdn);
-
-    for (i = 0; i < sess->num_of_addr; i++) {
-        if (sess->addr[i].ipv4)
-            ogs_freeaddrinfo(sess->addr[i].ipv4);
-        if (sess->addr[i].ipv6)
-            ogs_freeaddrinfo(sess->addr[i].ipv6);
-    }
-    sess->num_of_addr = 0;
+    if (sess->dnn)
+        ogs_free(sess->dnn);
 
     ogs_pool_free(&af_sess_pool, sess);
 }
@@ -203,27 +176,6 @@ void af_sess_remove_all(void)
 af_sess_t *af_sess_find(uint32_t index)
 {
     return ogs_pool_find(&af_sess_pool, index);
-}
-
-af_sess_t *af_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn)
-{
-    af_sess_t *sess = NULL;
-
-    ogs_assert(s_nssai);
-    ogs_assert(dnn);
-
-    ogs_list_for_each(&self.sess_list, sess)
-        if (sess->s_nssai.sst == s_nssai->sst &&
-            sess->dnn && strcmp(sess->dnn, dnn) == 0)
-            return sess;
-
-    return NULL;
-}
-
-af_sess_t *af_sess_find_by_binding_id(char *binding_id)
-{
-    ogs_assert(binding_id);
-    return af_sess_find(atoll(binding_id));
 }
 
 void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type)

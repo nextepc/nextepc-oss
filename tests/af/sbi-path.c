@@ -136,7 +136,7 @@ void af_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
 }
 
 void af_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        af_sess_t *sess, ogs_sbi_stream_t *stream, void *data,
+        af_sess_t *sess, void *data,
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data))
 {
     ogs_sbi_xact_t *xact = NULL;
@@ -144,7 +144,6 @@ void af_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
     ogs_assert(target_nf_type);
 
     ogs_assert(sess);
-    ogs_assert(stream);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi,
@@ -152,34 +151,12 @@ void af_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
             af_timer_sbi_client_wait_expire);
     if (!xact) {
         ogs_error("af_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", sess->dnn);
         return;
     }
-
-    xact->assoc_stream = stream;
 
     if (ogs_sbi_discover_and_send(xact,
             (ogs_fsm_handler_t)af_nf_state_registered, client_cb) != true) {
         ogs_error("af_sbi_discover_and_send() failed");
-        ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", sess->dnn);
         return;
     }
-}
-
-void af_sbi_send_response(ogs_sbi_stream_t *stream, int status)
-{
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    ogs_assert(stream);
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
-
-    response = ogs_sbi_build_response(&sendmsg, status);
-    ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
 }

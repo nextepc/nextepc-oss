@@ -20,14 +20,10 @@
 #include "sbi-path.h"
 #include "nbsf-handler.h"
 
-bool bsf_nbsf_management_pcf_binding(
+bool bsf_nbsf_management_handle_pcf_binding(
         bsf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
-#if 0
-    int rv, status = 0;
-#else
     int status = 0;
-#endif
     char *strerror = NULL;
     ogs_sbi_server_t *server = NULL;
 

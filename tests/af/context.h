@@ -66,29 +66,18 @@ typedef struct af_sess_s af_sess_t;
 typedef struct af_sess_s {
     ogs_sbi_object_t sbi;
 
-    char *binding_id;
+    char *ipv4addr;
+    char *ipv6prefix;
 
     char *supi;
     char *gpsi;
 
-    char *ipv4addr;
-    char *ipv6prefix;
-
     ogs_s_nssai_t s_nssai;
     char *dnn;
 
-    /* PCF address information */
-    char *pcf_fqdn;
-
-    int num_of_addr;
     struct {
-        ogs_sockaddr_t *ipv4;
-        ogs_sockaddr_t *ipv6;
-        int port;
-    } addr[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
-
-    /* SBI Features */
-    uint64_t management_features;
+        ogs_sbi_client_t *client;
+    } pcf;
 
 } af_sess_t;
 
@@ -98,13 +87,11 @@ af_context_t *af_self(void);
 
 int af_context_parse_config(void);
 
-af_sess_t *af_sess_add_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
+af_sess_t *af_sess_add_by_ue_address(char *ipv4addr, char *ipv6prefix);
 void af_sess_remove(af_sess_t *sess);
 void af_sess_remove_all(void);
 
 af_sess_t *af_sess_find(uint32_t index);
-af_sess_t *af_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
-af_sess_t *af_sess_find_by_binding_id(char *binding_id);
 
 void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type);
 

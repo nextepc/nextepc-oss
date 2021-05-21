@@ -24,6 +24,7 @@ libaf_sources = files('''
     nnrf-handler.c
     nf-sm.c
 
+    nbsf-build.c
     nbsf-handler.c
 
     sbi-path.c

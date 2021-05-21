@@ -147,7 +147,7 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                     break;
                 }
 
-                bsf_nbsf_management_pcf_binding(sess, stream, &message);
+                bsf_nbsf_management_handle_pcf_binding(sess, stream, &message);
                 break;
 
             DEFAULT

@@ -41,9 +41,7 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
 {
     int rv;
 
-#if 0
     af_sess_t *sess = NULL;
-#endif
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
@@ -219,6 +217,38 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
                 END
                 break;
 
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        message.h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+            SWITCH(message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
+                sbi_xact = e->sbi.data;
+                ogs_assert(sbi_xact);
+
+                sess = (af_sess_t *)sbi_xact->sbi_object;
+                ogs_assert(sess);
+
+                ogs_sbi_xact_remove(sbi_xact);
+
+                SWITCH(message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_GET)
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK)
+                        af_nbsf_management_handle_pcf_binding(sess, &message);
+                    else
+                        ogs_error("HTTP response error [%d]",
+                                message.res_status);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
                         message.h.resource.component[0]);

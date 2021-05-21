@@ -18,6 +18,7 @@
  */
 
 #include "test-common.h"
+#include "af/sbi-path.h"
 
 static void test1_func(abts_case *tc, void *data)
 {
@@ -41,6 +42,10 @@ static void test1_func(abts_case *tc, void *data)
     test_ue_t *test_ue = NULL;
     test_sess_t *sess = NULL;
     test_bearer_t *qos_flow = NULL;
+
+    af_sess_t *af_sess = NULL;
+    char *af_ipv4addr = NULL;
+    char *af_ipv6prefix = NULL;
 
     bson_t *doc = NULL;
 
@@ -245,6 +250,34 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+
+    /* Send GTP-U Router Solicitation */
+    rv = test_gtpu_send_slacc_rs(gtpu, qos_flow);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive GTP-U Router Advertisement */
+    recvbuf = test_gtpu_read(gtpu);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testgtpu_recv(test_ue, recvbuf);
+
+    /* Add AF-Session */
+    ogs_assert(sess->ue_ip.ipv4 && sess->ue_ip.ipv6);
+    af_ipv4addr = ogs_ipv4_to_string(sess->ue_ip.addr);
+    ogs_assert(af_ipv4addr);
+    af_ipv6prefix = ogs_ipv6prefix_to_string(
+                    sess->ue_ip.addr6, OGS_IPV6_DEFAULT_PREFIX_LEN);
+    ogs_assert(af_ipv6prefix);
+
+    af_sess = af_sess_add_by_ue_address(af_ipv4addr, af_ipv6prefix);
+    ogs_assert(af_sess);
+
+    ogs_free(af_ipv4addr);
+    ogs_free(af_ipv6prefix);
+
+#if 0
+    af_sbi_discover_and_send(OpenAPI_nf_type_BSF, sess, NULL,
+            af_nbsf_management_build_discover);
+#endif
 
     /* Send De-registration request */
     gmmbuf = testgmm_build_de_registration_request(test_ue, 1);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BSF_NBSF_HANDLER_H
-#define BSF_NBSF_HANDLER_H
+#ifndef AF_NBSF_BUILD_H
+#define AF_NBSF_BUILD_H
 
 #include "context.h"
 
@@ -26,11 +26,11 @@
 extern "C" {
 #endif
 
-bool bsf_nbsf_management_handle_pcf_binding(
-        bsf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+ogs_sbi_request_t *af_nbsf_management_build_discover(
+        af_sess_t *sess, void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* BSF_NBSF_HANDLER_H */
+#endif /* AF_NBSF_BUILD_H */

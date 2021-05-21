@@ -17,29 +17,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef AF_SBI_PATH_H
-#define AF_SBI_PATH_H
-
-#include "nnrf-build.h"
 #include "nbsf-build.h"
 
-#ifdef __cplusplus
-extern "C" {
+ogs_sbi_request_t *af_nbsf_management_build_discover(
+        af_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    ogs_assert(sess);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
+    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
+    message.h.resource.component[0] =
+        (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
+
+#if 0
+    message.param.snssai_presence = true;
+    memcpy(&message.param.s_nssai, &sess->s_nssai,
+            sizeof(message.param.s_nssai));
 #endif
 
-int af_sbi_open(void);
-void af_sbi_close(void);
-
-void af_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-
-void af_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
-
-void af_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        af_sess_t *sess, void *data,
-        ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data));
-
-#ifdef __cplusplus
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+    
+    return request;
 }
-#endif
-
-#endif /* AF_SBI_PATH_H */
