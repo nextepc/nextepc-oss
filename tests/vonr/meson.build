@@ -25,7 +25,7 @@ test5gc_vonr_sources = files('''
 test5gc_vonr_exe = executable('vonr',
     sources : test5gc_vonr_sources,
     c_args : testunit_core_cc_flags,
-    dependencies : [libtest5gc_dep, libaf_dep])
+    dependencies : libtest5gc_dep)
 
 test('vonr',
     test5gc_vonr_exe,
