@@ -38,6 +38,7 @@ typedef enum {
     AF_EVT_SBI_SERVER,
     AF_EVT_SBI_CLIENT,
     AF_EVT_SBI_TIMER,
+    AF_EVT_SBI_LOCAL,
 
     AF_EVT_TOP,
 
@@ -47,6 +48,13 @@ typedef struct af_event_s {
     int id;
     ogs_pkbuf_t *pkbuf;
     int timer_id;
+    int local_id;
+
+    struct {
+        OpenAPI_nf_type_e target_nf_type;
+        void *data;
+        ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data);
+    } local;
 
     struct {
         ogs_sbi_request_t *request;

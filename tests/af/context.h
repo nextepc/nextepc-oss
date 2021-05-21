@@ -23,7 +23,9 @@
 #include "ogs-sbi.h"
 #include "ogs-app.h"
 
+#include "event.h"
 #include "timer.h"
+#include "local.h"
 #include "af-sm.h"
 
 #ifdef __cplusplus

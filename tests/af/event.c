@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "event.h"
 #include "context.h"
 
 static OGS_POOL(pool, af_event_t);
@@ -68,6 +67,8 @@ const char *af_event_get_name(af_event_t *e)
         return "AF_EVT_SBI_CLIENT";
     case AF_EVT_SBI_TIMER:
         return "AF_EVT_SBI_TIMER";
+    case AF_EVT_SBI_LOCAL:
+        return "AF_EVT_SBI_LOCAL";
 
     default: 
        break;

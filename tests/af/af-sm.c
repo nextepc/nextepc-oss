@@ -318,6 +318,20 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
         }
         break;
 
+    case AF_EVT_SBI_LOCAL:
+        ogs_assert(e);
+
+        switch(e->local_id) {
+        case AF_LOCAL_DISCOVER_AND_SEND:
+            af_sbi_discover_and_send(e->local.target_nf_type,
+                    e->sess, e->local.data, e->local.build);
+            break;
+        default:
+            ogs_error("Unknown local[%s:%d]",
+                    af_local_get_name(e->local_id), e->local_id);
+        }
+        break;
+
     default:
         ogs_error("No handler for event %s", af_event_get_name(e));
         break;

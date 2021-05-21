@@ -19,6 +19,7 @@ libaf_sources = files('''
     context.c
     event.c
     timer.c
+    local.c
 
     nnrf-build.c
     nnrf-handler.c

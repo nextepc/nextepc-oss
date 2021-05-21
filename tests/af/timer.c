@@ -17,8 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "timer.h"
-#include "event.h"
 #include "context.h"
 
 const char *af_timer_get_name(af_timer_e id)
