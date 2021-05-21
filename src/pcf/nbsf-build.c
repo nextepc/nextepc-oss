@@ -54,8 +54,8 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     PcfBinding.supi = pcf_ue->supi;
     PcfBinding.gpsi = pcf_ue->gpsi;
 
-    PcfBinding.ipv4_addr = sess->ipv4addr;
-    PcfBinding.ipv6_prefix = sess->ipv6prefix;
+    PcfBinding.ipv4_addr = sess->ipv4addr_string;
+    PcfBinding.ipv6_prefix = sess->ipv6prefix_string;
 
     ogs_assert(sess->dnn);
     PcfBinding.dnn = sess->dnn;

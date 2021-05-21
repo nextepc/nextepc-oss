@@ -493,6 +493,76 @@ char *ogs_ipv6prefix_to_string(uint8_t *addr6, uint8_t prefixlen)
     return ogs_mstrcatf(buf, "/%d", prefixlen);
 }
 
+int ogs_ipv4_from_string(uint32_t *addr, char *string)
+{
+    int rv;
+    ogs_sockaddr_t tmp;
+
+    ogs_assert(addr);
+    ogs_assert(string);
+
+    rv = ogs_inet_pton(AF_INET, string, &tmp);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid IPv4 string = %s", string);
+        return OGS_ERROR;
+    }
+
+    *addr = tmp.sin.sin_addr.s_addr;
+
+    return OGS_OK;
+}
+
+int ogs_ipv6addr_from_string(uint8_t *addr6, char *string)
+{
+    int rv;
+    ogs_sockaddr_t tmp;
+
+    ogs_assert(addr6);
+    ogs_assert(string);
+
+    rv = ogs_inet_pton(AF_INET6, string, &tmp);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid IPv6 string = %s", string);
+        return OGS_ERROR;
+    }
+
+    memcpy(addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+
+    return OGS_OK;
+}
+
+int ogs_ipv6prefix_from_string(uint8_t *addr6, uint8_t *prefixlen, char *string)
+{
+    int rv;
+    ogs_sockaddr_t tmp;
+    char *v = NULL, *pv = NULL, *ipstr = NULL, *mask_or_numbits = NULL;
+
+    ogs_assert(addr6);
+    ogs_assert(prefixlen);
+    ogs_assert(string);
+    pv = v = ogs_strdup(string);
+    ogs_assert(v);
+
+    ipstr = strsep(&v, "/");
+    if (ipstr)
+        mask_or_numbits = v;
+
+    if (!ipstr || !mask_or_numbits) {
+        ogs_error("Invalid IPv6 Prefix string = %s", v);
+        ogs_free(v);
+        return OGS_ERROR;
+    }
+
+    rv = ogs_inet_pton(AF_INET6, ipstr, &tmp);
+    ogs_expect_or_return_val(rv == OGS_OK, rv);
+
+    memcpy(addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+    *prefixlen = atoi(mask_or_numbits);
+
+    ogs_free(pv);
+    return OGS_OK;
+}
+
 int ogs_sockaddr_to_user_plane_ip_resource_info(
     ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
     ogs_user_plane_ip_resource_info_t *info)

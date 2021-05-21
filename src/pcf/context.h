@@ -45,6 +45,8 @@ typedef struct pcf_context_s {
     ogs_list_t      pcf_ue_list;
     ogs_hash_t      *supi_hash;
 
+    ogs_hash_t      *ipv4addr_hash;
+    ogs_hash_t      *ipv6prefix_hash;
 } pcf_context_t;
 
 #define PCF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
@@ -103,8 +105,14 @@ struct pcf_sess_s {
     char *dnn;
     char *notification_uri;
 
-    char *ipv4addr;
-    char *ipv6prefix;
+    char *ipv4addr_string;
+    char *ipv6prefix_string;
+
+    uint32_t ipv4addr;
+    struct {
+        uint8_t len;
+        uint8_t addr6[OGS_IPV6_LEN];
+    } ipv6prefix;
 
     ogs_s_nssai_t s_nssai;
 
@@ -134,10 +142,16 @@ pcf_ue_t *pcf_ue_find_by_association_id(char *association_id);
 pcf_sess_t *pcf_sess_add(pcf_ue_t *pcf_ue, uint8_t psi);
 void pcf_sess_remove(pcf_sess_t *sess);
 void pcf_sess_remove_all(pcf_ue_t *pcf_ue);
+
+bool pcf_sess_set_ipv4addr(pcf_sess_t *sess, char *ipv4addr);
+bool pcf_sess_set_ipv6prefix(pcf_sess_t *sess, char *ipv6prefix);
+
 pcf_sess_t *pcf_sess_find(uint32_t index);
 pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id);
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi);
 pcf_sess_t *pcf_sess_find_by_dnn(pcf_ue_t *pcf_ue, char *dnn);
+pcf_sess_t *pcf_sess_find_by_ipv4addr(char *ipv4addr_string);
+pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string);
 
 pcf_ue_t *pcf_ue_cycle(pcf_ue_t *pcf_ue);
 pcf_sess_t *pcf_sess_cycle(pcf_sess_t *sess);
