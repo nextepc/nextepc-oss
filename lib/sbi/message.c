@@ -371,6 +371,14 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         if (sNSSAI.sd)
             ogs_free(sNSSAI.sd);
     }
+    if (message->param.ipv4addr) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_IPV4ADDR, message->param.ipv4addr);
+    }
+    if (message->param.ipv6prefix) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_IPV6PREFIX, message->param.ipv6prefix);
+    }
 
     build_content(&request->http, message);
 
@@ -526,6 +534,10 @@ int ogs_sbi_parse_request(
                     cJSON_Delete(item);
                 }
             }
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV4ADDR)) {
+            message->param.ipv4addr = ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV6PREFIX)) {
+            message->param.ipv6prefix = ogs_hash_this_val(hi);
         }
     }
 

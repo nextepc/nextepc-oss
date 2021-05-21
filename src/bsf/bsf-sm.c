@@ -121,22 +121,37 @@ void bsf_state_operational(ogs_fsm_t *s, bsf_event_t *e)
                     sess = bsf_sess_find_by_binding_id(
                             message.h.resource.component[1]);
                 } else {
-                    if (message.PcfBinding &&
-                        message.PcfBinding->snssai && message.PcfBinding->dnn) {
-                        ogs_s_nssai_t s_nssai;
+                    SWITCH(message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        if (message.PcfBinding &&
+                            message.PcfBinding->snssai &&
+                            message.PcfBinding->dnn) {
+                            ogs_s_nssai_t s_nssai;
 
-                        s_nssai.sst = message.PcfBinding->snssai->sst;
-                        s_nssai.sd = ogs_s_nssai_sd_from_string(
-                                message.PcfBinding->snssai->sd);
+                            s_nssai.sst = message.PcfBinding->snssai->sst;
+                            s_nssai.sd = ogs_s_nssai_sd_from_string(
+                                    message.PcfBinding->snssai->sd);
 
-                        sess = bsf_sess_find_by_snssai_and_dnn(
-                                &s_nssai, message.PcfBinding->dnn);
-                        if (!sess) {
-                            sess = bsf_sess_add_by_snssai_and_dnn(
+                            sess = bsf_sess_find_by_snssai_and_dnn(
                                     &s_nssai, message.PcfBinding->dnn);
-                            ogs_assert(sess);
+                            if (!sess) {
+                                sess = bsf_sess_add_by_snssai_and_dnn(
+                                        &s_nssai, message.PcfBinding->dnn);
+                                ogs_assert(sess);
+                            }
                         }
-                    }
+                        break;
+                    CASE(OGS_SBI_HTTP_METHOD_GET)
+                        if (!sess && message.param.ipv4addr)
+                            sess = bsf_sess_find_by_ipv4addr(
+                                        message.param.ipv4addr);
+                        if (!sess && message.param.ipv6prefix)
+                            sess = bsf_sess_find_by_ipv6prefix(
+                                        message.param.ipv6prefix);
+                        break;
+                    DEFAULT
+                        ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    END
                 }
 
                 if (!sess) {

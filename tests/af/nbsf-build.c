@@ -34,11 +34,8 @@ ogs_sbi_request_t *af_nbsf_management_build_discover(
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
 
-#if 0
-    message.param.snssai_presence = true;
-    memcpy(&message.param.s_nssai, &sess->s_nssai,
-            sizeof(message.param.s_nssai));
-#endif
+    message.param.ipv4addr = sess->ipv4addr;
+    message.param.ipv6prefix = sess->ipv6prefix;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);

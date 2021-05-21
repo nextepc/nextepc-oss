@@ -198,6 +198,18 @@ bool bsf_nbsf_management_handle_pcf_binding(
             ogs_free(sendmsg.http.location);
             break;
 
+        CASE(OGS_SBI_HTTP_METHOD_POST)
+            memset(&sendmsg, 0, sizeof(sendmsg));
+            sendmsg.PcfBinding = PcfBinding;
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
+            ogs_assert(response);
+            ogs_sbi_server_send_response(stream, response);
+
+            ogs_free(sendmsg.http.location);
+            break;
+
         DEFAULT
             strerror = ogs_msprintf("Invalid HTTP method [%s]",
                     recvmsg->h.method);
