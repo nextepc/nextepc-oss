@@ -179,6 +179,22 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 } else {
                     SWITCH(sbi_message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_DELETE)
+                        if (sbi_message->res_status !=
+                                OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                            strerror = ogs_msprintf(
+                                    "[%s:%d] HTTP response error [%d]",
+                                    smf_ue->supi, sess->psi,
+                                    sbi_message->res_status);
+                            ogs_assert(strerror);
+
+                            ogs_error("%s", strerror);
+                            ogs_sbi_server_send_error(stream,
+                                    sbi_message->res_status,
+                                    sbi_message, strerror, NULL);
+                            ogs_free(strerror);
+                            break;
+                        }
+
                         smf_npcf_smpolicycontrol_handle_delete(
                                 sess, stream, state, sbi_message);
                         break;
@@ -196,7 +212,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                 sbi_message, strerror, NULL);
                         ogs_free(strerror);
                     END
-                    break;
                 }
                 break;
 

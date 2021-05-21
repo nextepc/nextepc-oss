@@ -153,16 +153,20 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 if (message->h.resource.component[1]) {
                     SWITCH(message->h.method)
                     CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                        handled = pcf_nbsf_management_handle_de_register(
-                                sess, stream, message);
-                        if (!handled) {
-                            ogs_error("[%s:%d] pcf_nbsf_management_handle_"
-                                    "de_register() failed",
-                                    pcf_ue->supi, sess->psi);
+                        if (message->res_status !=
+                                OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+                            ogs_error("[%s:%d] HTTP response error [%d]",
+                                pcf_ue->supi, sess->psi, message->res_status);
+                            ogs_sbi_server_send_error(stream,
+                                message->res_status,
+                                NULL, "HTTP response error", pcf_ue->supi);
                             OGS_FSM_TRAN(s, pcf_sm_state_exception);
-                        } else {
-                            OGS_FSM_TRAN(s, pcf_sm_state_deleted);
+                            break;
                         }
+
+                        pcf_nbsf_management_handle_de_register(
+                                sess, stream, message);
+                        OGS_FSM_TRAN(s, pcf_sm_state_deleted);
                         break;
                     DEFAULT
                         ogs_error("[%s:%d] Unknown method [%s]",

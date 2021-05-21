@@ -210,6 +210,9 @@ void af_nf_state_registered(ogs_fsm_t *s, af_event_t *e)
                         nf_instance->time.heartbeat_interval +
                         ogs_app()->time.nf_instance.no_heartbeat_margin));
             }
+
+            ogs_nnrf_nfm_send_nf_status_subscribe(client,
+                    af_self()->nf_type, nf_instance->id, OpenAPI_nf_type_BSF);
         }
 
         break;

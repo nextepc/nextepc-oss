@@ -41,7 +41,9 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
 {
     int rv;
 
+#if 0
     af_sess_t *sess = NULL;
+#endif
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
@@ -102,52 +104,6 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
                             "Invalid HTTP method", message.h.method);
                 END
-                break;
-
-            DEFAULT
-                ogs_error("Invalid resource name [%s]",
-                        message.h.resource.component[0]);
-                ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
-                        "Invalid resource name",
-                        message.h.resource.component[0]);
-            END
-            break;
-
-        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
-            SWITCH(message.h.resource.component[0])
-            CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
-                if (message.h.resource.component[1]) {
-                    sess = af_sess_find_by_binding_id(
-                            message.h.resource.component[1]);
-                } else {
-                    if (message.PcfBinding &&
-                        message.PcfBinding->snssai && message.PcfBinding->dnn) {
-                        ogs_s_nssai_t s_nssai;
-
-                        s_nssai.sst = message.PcfBinding->snssai->sst;
-                        s_nssai.sd = ogs_s_nssai_sd_from_string(
-                                message.PcfBinding->snssai->sd);
-
-                        sess = af_sess_find_by_snssai_and_dnn(
-                                &s_nssai, message.PcfBinding->dnn);
-                        if (!sess) {
-                            sess = af_sess_add_by_snssai_and_dnn(
-                                    &s_nssai, message.PcfBinding->dnn);
-                            ogs_assert(sess);
-                        }
-                    }
-                }
-
-                if (!sess) {
-                    ogs_error("Not found [%s]", message.h.uri);
-                    ogs_sbi_server_send_error(stream,
-                        OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                        &message, "Not found", message.h.uri);
-                    break;
-                }
-
-                af_nbsf_management_pcf_binding(sess, stream, &message);
                 break;
 
             DEFAULT

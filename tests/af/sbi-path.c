@@ -90,7 +90,7 @@ int af_sbi_open(void)
 
         /* Build NF service information. It will be transmitted to NRF. */
         service = ogs_sbi_nf_service_build_default(nf_instance,
-                (char*)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
+                (char*)OGS_SBI_SERVICE_NAME_NAF_EVENTEXPOSURE);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
                 (char*)OGS_SBI_API_V1_0_0, NULL);
