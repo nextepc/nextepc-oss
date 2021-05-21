@@ -90,12 +90,10 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 goto cleanup;
             }
 
-            if (sess->ipv4addr)
-                ogs_free(sess->ipv4addr);
-            sess->ipv4addr = ogs_strdup(PcfBinding->ipv4_addr);
-            if (sess->ipv6prefix)
-                ogs_free(sess->ipv6prefix);
-            sess->ipv6prefix = ogs_strdup(PcfBinding->ipv6_prefix);
+            if (PcfBinding->ipv4_addr)
+                bsf_sess_set_ipv4addr(sess, PcfBinding->ipv4_addr);
+            if (PcfBinding->ipv6_prefix)
+                bsf_sess_set_ipv6prefix(sess, PcfBinding->ipv6_prefix);
 
             if (PcfBinding->pcf_fqdn) {
                 char fqdn[OGS_MAX_FQDN_LEN];

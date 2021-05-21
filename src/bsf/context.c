@@ -27,6 +27,9 @@ static OGS_POOL(bsf_sess_pool, bsf_sess_t);
 
 static int context_initialized = 0;
 
+static void clear_ipv4addr(bsf_sess_t *sess);
+static void clear_ipv6prefix(bsf_sess_t *sess);
+
 void bsf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -38,9 +41,8 @@ void bsf_context_init(void)
 
     ogs_pool_init(&bsf_sess_pool, ogs_app()->pool.sess);
 
-    self.supi_hash = ogs_hash_make();
-    self.ipv4_hash = ogs_hash_make();
-    self.ipv6_hash = ogs_hash_make();
+    self.ipv4addr_hash = ogs_hash_make();
+    self.ipv6prefix_hash = ogs_hash_make();
 
     context_initialized = 1;
 }
@@ -51,12 +53,10 @@ void bsf_context_final(void)
 
     bsf_sess_remove_all();
 
-    ogs_assert(self.supi_hash);
-    ogs_hash_destroy(self.supi_hash);
-    ogs_assert(self.ipv4_hash);
-    ogs_hash_destroy(self.ipv4_hash);
-    ogs_assert(self.ipv6_hash);
-    ogs_hash_destroy(self.ipv6_hash);
+    ogs_assert(self.ipv4addr_hash);
+    ogs_hash_destroy(self.ipv4addr_hash);
+    ogs_assert(self.ipv6prefix_hash);
+    ogs_hash_destroy(self.ipv6prefix_hash);
 
     ogs_pool_final(&bsf_sess_pool);
 
@@ -170,10 +170,8 @@ void bsf_sess_remove(bsf_sess_t *sess)
     if (sess->gpsi)
         ogs_free(sess->gpsi);
 
-    if (sess->ipv4addr)
-        ogs_free(sess->ipv4addr);
-    if (sess->ipv6prefix)
-        ogs_free(sess->ipv6prefix);
+    clear_ipv4addr(sess);
+    clear_ipv6prefix(sess);
 
     ogs_assert(sess->dnn);
     ogs_free(sess->dnn);
@@ -200,6 +198,71 @@ void bsf_sess_remove_all(void)
         bsf_sess_remove(sess);
 }
 
+static void clear_ipv4addr(bsf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->ipv4addr_string) {
+        ogs_hash_set(self.ipv4addr_hash,
+                &sess->ipv4addr, sizeof(sess->ipv4addr), NULL);
+        ogs_free(sess->ipv4addr_string);
+    }
+}
+
+static void clear_ipv6prefix(bsf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->ipv6prefix_string) {
+        ogs_hash_set(self.ipv6prefix_hash,
+                &sess->ipv6prefix, (sess->ipv6prefix.len >> 3) + 1, NULL);
+        ogs_free(sess->ipv6prefix_string);
+    }
+}
+
+bool bsf_sess_set_ipv4addr(bsf_sess_t *sess, char *ipv4addr_string)
+{
+    int rv;
+
+    ogs_assert(sess);
+    ogs_assert(ipv4addr_string);
+
+    clear_ipv4addr(sess);
+
+    rv = ogs_ipv4_from_string(&sess->ipv4addr, ipv4addr_string);
+    ogs_expect_or_return_val(rv == OGS_OK, false);
+
+    sess->ipv4addr_string = ogs_strdup(ipv4addr_string);
+    ogs_expect_or_return_val(sess->ipv4addr_string, false);
+
+    ogs_hash_set(self.ipv4addr_hash,
+            &sess->ipv4addr, sizeof(sess->ipv4addr), sess);
+
+    return true;
+}
+
+bool bsf_sess_set_ipv6prefix(bsf_sess_t *sess, char *ipv6prefix_string)
+{
+    int rv;
+
+    ogs_assert(sess);
+    ogs_assert(ipv6prefix_string);
+
+    clear_ipv6prefix(sess);
+
+    rv = ogs_ipv6prefix_from_string(
+            sess->ipv6prefix.addr6, &sess->ipv6prefix.len, ipv6prefix_string);
+    ogs_expect_or_return_val(rv == OGS_OK, false);
+
+    sess->ipv6prefix_string = ogs_strdup(ipv6prefix_string);
+    ogs_expect_or_return_val(sess->ipv6prefix_string, false);
+
+    ogs_hash_set(self.ipv6prefix_hash,
+            &sess->ipv6prefix, (sess->ipv6prefix.len >> 3) + 1, sess);
+
+    return true;
+}
+
 bsf_sess_t *bsf_sess_find(uint32_t index)
 {
     return ogs_pool_find(&bsf_sess_pool, index);
@@ -224,6 +287,37 @@ bsf_sess_t *bsf_sess_find_by_binding_id(char *binding_id)
 {
     ogs_assert(binding_id);
     return bsf_sess_find(atoll(binding_id));
+}
+
+bsf_sess_t *bsf_sess_find_by_ipv4addr(char *ipv4addr_string)
+{
+    uint32_t ipv4addr;
+    int rv;
+
+    ogs_assert(ipv4addr_string);
+
+    rv = ogs_ipv4_from_string(&ipv4addr, ipv4addr_string);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+
+    return ogs_hash_get(self.ipv4addr_hash, &ipv4addr, sizeof(ipv4addr));
+}
+
+bsf_sess_t *bsf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
+{
+    int rv;
+    struct {
+        uint8_t len;
+        uint8_t addr6[OGS_IPV6_LEN];
+    } ipv6prefix;
+
+    ogs_assert(ipv6prefix_string);
+
+    rv = ogs_ipv6prefix_from_string(
+            ipv6prefix.addr6, &ipv6prefix.len, ipv6prefix_string);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+
+    return ogs_hash_get(self.ipv6prefix_hash,
+            &ipv6prefix, (ipv6prefix.len >> 3) + 1);
 }
 
 void bsf_sess_select_nf(bsf_sess_t *sess, OpenAPI_nf_type_e nf_type)
