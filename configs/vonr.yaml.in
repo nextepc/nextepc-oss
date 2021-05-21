@@ -225,6 +225,11 @@ bsf:
       - addr: 127.0.0.15
         port: 7777
 
+af:
+    sbi:
+      - addr: 127.0.0.16
+        port: 7777
+
 udr:
     sbi:
       - addr: 127.0.0.20

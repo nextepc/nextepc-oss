@@ -28,6 +28,8 @@ libaf_sources = files('''
 
     sbi-path.c
     af-sm.c
+
+    init.c
 '''.split())
 
 libaf = static_library('af',

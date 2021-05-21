@@ -17,24 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef AF_INIT_H
+#define AF_INIT_H
+
 #include "ogs-app.h"
 
-int app_initialize(const char *const argv[])
-{
-    int rv;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    rv = af_initialize();
-    if (rv != OGS_OK) {
-        ogs_error("Failed to intialize AF");
-        return rv;
-    }
-    ogs_info("AF initialize...done");
+int af_initialize(void);
+void af_terminate(void);
 
-    return OGS_OK;
+#ifdef __cplusplus
 }
+#endif
 
-void app_terminate(void)
-{
-    af_terminate();
-    ogs_info("AF terminate...done");
-}
+#endif /* AF_INIT_H */

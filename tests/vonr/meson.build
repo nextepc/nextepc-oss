@@ -19,12 +19,13 @@ test5gc_vonr_sources = files('''
     abts-main.c
     qos-flow-test.c
     session-test.c
+    af-test.c
 '''.split())
 
 test5gc_vonr_exe = executable('vonr',
     sources : test5gc_vonr_sources,
     c_args : testunit_core_cc_flags,
-    dependencies : libtest5gc_dep)
+    dependencies : [libtest5gc_dep, libaf_dep])
 
 test('vonr',
     test5gc_vonr_exe,

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
+#include "init.h"
 #include "sbi-path.h"
 
 static ogs_thread_t *thread;
