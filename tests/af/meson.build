@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -15,20 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testinc = include_directories('.')
+libaf_sources = files('''
+    context.c
+    event.c
+    timer.c
 
-subdir('core')
-subdir('crypt')
-subdir('sctp')
-subdir('unit')
-subdir('common')
-subdir('af')
-subdir('app')
-subdir('registration')
-subdir('vonr')
-subdir('slice')
-subdir('attach')
-subdir('volte')
-subdir('csfb')
-subdir('310014')
-subdir('handover')
+    nnrf-build.c
+    nnrf-handler.c
+    nf-sm.c
+
+    nbsf-handler.c
+
+    sbi-path.c
+    af-sm.c
+'''.split())
+
+libaf = static_library('af',
+    sources : libaf_sources,
+    dependencies : [libapp_dep,
+                    libcrypt_dep,
+                    libsbi_dep],
+    install : false)
+
+libaf_dep = declare_dependency(
+    link_with : libaf,
+    dependencies : [libapp_dep,
+                    libcrypt_dep,
+                    libsbi_dep])
