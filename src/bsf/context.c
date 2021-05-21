@@ -179,13 +179,13 @@ void bsf_sess_remove(bsf_sess_t *sess)
     if (sess->pcf_fqdn)
         ogs_free(sess->pcf_fqdn);
 
-    for (i = 0; i < sess->num_of_addr; i++) {
-        if (sess->addr[i].ipv4)
-            ogs_freeaddrinfo(sess->addr[i].ipv4);
-        if (sess->addr[i].ipv6)
-            ogs_freeaddrinfo(sess->addr[i].ipv6);
+    for (i = 0; i < sess->num_of_pcf_ip; i++) {
+        if (sess->pcf_ip[i].addr)
+            ogs_free(sess->pcf_ip[i].addr);
+        if (sess->pcf_ip[i].addr6)
+            ogs_free(sess->pcf_ip[i].addr6);
     }
-    sess->num_of_addr = 0;
+    sess->num_of_pcf_ip = 0;
 
     ogs_pool_free(&bsf_sess_pool, sess);
 }

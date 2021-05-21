@@ -31,7 +31,10 @@ bool bsf_nbsf_management_handle_pcf_binding(
     ogs_sbi_header_t header;
     ogs_sbi_response_t *response = NULL;
 
-    OpenAPI_pcf_binding_t *PcfBinding = NULL;
+    OpenAPI_pcf_binding_t *RecvPcfBinding = NULL;
+    OpenAPI_pcf_binding_t SendPcfBinding;
+    OpenAPI_snssai_t Snssai;
+    char fqdn[OGS_MAX_FQDN_LEN];
     uint64_t supported_features = 0;
 
     ogs_assert(stream);
@@ -66,108 +69,106 @@ bool bsf_nbsf_management_handle_pcf_binding(
     } else {
         OpenAPI_list_t *PcfIpEndPointList = NULL;
         OpenAPI_lnode_t *node = NULL;
-        int i, rv;
+        int i;
 
         SWITCH(recvmsg->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
 
-            PcfBinding = recvmsg->PcfBinding;
-            ogs_assert(PcfBinding);
+            RecvPcfBinding = recvmsg->PcfBinding;
+            ogs_assert(RecvPcfBinding);
 
-            if (!PcfBinding->ipv4_addr && !PcfBinding->ipv6_prefix) {
+            if (!RecvPcfBinding->ipv4_addr && !RecvPcfBinding->ipv6_prefix) {
                 strerror = ogs_msprintf(
                             "No IPv4 address or IPv6 prefix[%p:%p]",
-                            PcfBinding->ipv4_addr, PcfBinding->ipv6_prefix);
+                            RecvPcfBinding->ipv4_addr,
+                            RecvPcfBinding->ipv6_prefix);
                 status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
                 goto cleanup;
             }
 
-            if (!PcfBinding->pcf_fqdn && !PcfBinding->pcf_ip_end_points) {
+            if (!RecvPcfBinding->pcf_fqdn &&
+                !RecvPcfBinding->pcf_ip_end_points) {
                 strerror = ogs_msprintf("No PCF address information [%p:%p]",
-                            PcfBinding->pcf_fqdn,
-                            PcfBinding->pcf_ip_end_points);
+                            RecvPcfBinding->pcf_fqdn,
+                            RecvPcfBinding->pcf_ip_end_points);
                 status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
                 goto cleanup;
             }
 
-            if (PcfBinding->ipv4_addr)
-                bsf_sess_set_ipv4addr(sess, PcfBinding->ipv4_addr);
-            if (PcfBinding->ipv6_prefix)
-                bsf_sess_set_ipv6prefix(sess, PcfBinding->ipv6_prefix);
+            if (RecvPcfBinding->ipv4_addr)
+                bsf_sess_set_ipv4addr(sess, RecvPcfBinding->ipv4_addr);
+            if (RecvPcfBinding->ipv6_prefix)
+                bsf_sess_set_ipv6prefix(sess, RecvPcfBinding->ipv6_prefix);
 
-            if (PcfBinding->pcf_fqdn) {
-                char fqdn[OGS_MAX_FQDN_LEN];
-
+            if (RecvPcfBinding->pcf_fqdn) {
                 ogs_fqdn_parse(fqdn,
-                        PcfBinding->pcf_fqdn, strlen(PcfBinding->pcf_fqdn));
+                        RecvPcfBinding->pcf_fqdn,
+                        strlen(RecvPcfBinding->pcf_fqdn));
 
                 if (sess->pcf_fqdn)
                     ogs_free(sess->pcf_fqdn);
                 sess->pcf_fqdn = ogs_strdup(fqdn);
             }
 
-            PcfIpEndPointList = PcfBinding->pcf_ip_end_points;
+            PcfIpEndPointList = RecvPcfBinding->pcf_ip_end_points;
 
-            for (i = 0; i < sess->num_of_addr; i++) {
-                if (sess->addr[i].ipv4)
-                    ogs_freeaddrinfo(sess->addr[i].ipv4);
-                if (sess->addr[i].ipv6)
-                    ogs_freeaddrinfo(sess->addr[i].ipv6);
-            }
-            sess->num_of_addr = 0;
+            if (PcfIpEndPointList) {
+                for (i = 0; i < sess->num_of_pcf_ip; i++) {
+                    if (sess->pcf_ip[i].addr)
+                        ogs_free(sess->pcf_ip[i].addr);
+                    if (sess->pcf_ip[i].addr6)
+                        ogs_free(sess->pcf_ip[i].addr6);
+                }
+                sess->num_of_pcf_ip = 0;
 
-            OpenAPI_list_for_each(PcfIpEndPointList, node) {
-                OpenAPI_ip_end_point_t *IpEndPoint = node->data;
-                ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
-                int port = 0;
+                OpenAPI_list_for_each(PcfIpEndPointList, node) {
+                    OpenAPI_ip_end_point_t *IpEndPoint = node->data;
+                    int port = 0;
 
-                if (!IpEndPoint) continue;
+                    if (!IpEndPoint) continue;
 
-                if (sess->num_of_addr < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
-                    port = IpEndPoint->port;
-                    if (!port) {
-                        if (ogs_sbi_default_uri_scheme() ==
-                                OpenAPI_uri_scheme_http)
-                            port = OGS_SBI_HTTP_PORT;
-                        else if (ogs_sbi_default_uri_scheme() ==
-                                OpenAPI_uri_scheme_https)
-                            port = OGS_SBI_HTTPS_PORT;
-                        else {
-                            ogs_fatal("Invalid scheme [%d]",
-                                ogs_sbi_default_uri_scheme());
-                            ogs_assert_if_reached();
+                    if (sess->num_of_pcf_ip < OGS_SBI_MAX_NUM_OF_IP_ADDRESS) {
+                        port = IpEndPoint->port;
+                        if (!port) {
+                            if (ogs_sbi_default_uri_scheme() ==
+                                    OpenAPI_uri_scheme_http)
+                                port = OGS_SBI_HTTP_PORT;
+                            else if (ogs_sbi_default_uri_scheme() ==
+                                    OpenAPI_uri_scheme_https)
+                                port = OGS_SBI_HTTPS_PORT;
+                            else {
+                                ogs_fatal("Invalid scheme [%d]",
+                                    ogs_sbi_default_uri_scheme());
+                                ogs_assert_if_reached();
+                            }
                         }
-                    }
 
-                    if (IpEndPoint->ipv4_address) {
-                        rv = ogs_getaddrinfo(&addr, AF_UNSPEC,
-                                IpEndPoint->ipv4_address, port, 0);
-                        if (rv != OGS_OK) continue;
-                    }
-                    if (IpEndPoint->ipv6_address) {
-                        rv = ogs_getaddrinfo(&addr6, AF_UNSPEC,
-                                IpEndPoint->ipv6_address, port, 0);
-                        if (rv != OGS_OK) continue;
-                    }
-
-                    if (addr || addr6) {
-                        sess->addr[sess->num_of_addr].port = port;
-                        sess->addr[sess->num_of_addr].ipv4 = addr;
-                        sess->addr[sess->num_of_addr].ipv6 = addr6;
-                        sess->num_of_addr++;
+                        if (IpEndPoint->ipv4_address ||
+                            IpEndPoint->ipv6_address) {
+                            if (IpEndPoint->ipv4_address) {
+                                sess->pcf_ip[sess->num_of_pcf_ip].addr =
+                                    ogs_strdup(IpEndPoint->ipv4_address);
+                            }
+                            if (IpEndPoint->ipv6_address) {
+                                sess->pcf_ip[sess->num_of_pcf_ip].addr6 =
+                                    ogs_strdup(IpEndPoint->ipv6_address);
+                            }
+                            sess->pcf_ip[sess->num_of_pcf_ip].port = port;
+                            sess->num_of_pcf_ip++;
+                        }
                     }
                 }
             }
 
-            if (PcfBinding->supi) {
+            if (RecvPcfBinding->supi) {
                 if (sess->supi)
                     ogs_free(sess->supi);
-                sess->supi = ogs_strdup(PcfBinding->supi);
+                sess->supi = ogs_strdup(RecvPcfBinding->supi);
             }
-            if (PcfBinding->gpsi) {
+            if (RecvPcfBinding->gpsi) {
                 if (sess->gpsi)
                     ogs_free(sess->gpsi);
-                sess->gpsi = ogs_strdup(PcfBinding->gpsi);
+                sess->gpsi = ogs_strdup(RecvPcfBinding->gpsi);
             }
 
             memset(&header, 0, sizeof(header));
@@ -178,16 +179,16 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
             header.resource.component[1] = sess->binding_id;
 
-            if (PcfBinding->supp_feat) {
+            if (RecvPcfBinding->supp_feat) {
                 supported_features =
-                    ogs_uint64_from_string(PcfBinding->supp_feat);
+                    ogs_uint64_from_string(RecvPcfBinding->supp_feat);
                 sess->management_features &= supported_features;
             } else {
                 sess->management_features = 0;
             }
 
             memset(&sendmsg, 0, sizeof(sendmsg));
-            sendmsg.PcfBinding = PcfBinding;
+            sendmsg.PcfBinding = RecvPcfBinding;
             sendmsg.http.location = ogs_sbi_server_uri(server, &header);
 
             response = ogs_sbi_build_response(
@@ -198,12 +199,20 @@ bool bsf_nbsf_management_handle_pcf_binding(
             ogs_free(sendmsg.http.location);
             break;
 
-        CASE(OGS_SBI_HTTP_METHOD_POST)
-            memset(&sendmsg, 0, sizeof(sendmsg));
-            sendmsg.PcfBinding = PcfBinding;
+        CASE(OGS_SBI_HTTP_METHOD_GET)
+            memset(&Snssai, 0, sizeof(Snssai));
+            Snssai.sst = sess->s_nssai.sst;
+            Snssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
 
-            response = ogs_sbi_build_response(
-                    &sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
+            memset(&SendPcfBinding, 0, sizeof(SendPcfBinding));
+
+            SendPcfBinding.dnn = sess->dnn;
+            SendPcfBinding.snssai = &Snssai;
+
+            memset(&sendmsg, 0, sizeof(sendmsg));
+            sendmsg.PcfBinding = &SendPcfBinding;
+
+            response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
             ogs_assert(response);
             ogs_sbi_server_send_response(stream, response);
 

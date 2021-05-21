@@ -85,12 +85,12 @@ typedef struct bsf_sess_s {
     /* PCF address information */
     char *pcf_fqdn;
 
-    int num_of_addr;
+    int num_of_pcf_ip;
     struct {
-        ogs_sockaddr_t *ipv4;
-        ogs_sockaddr_t *ipv6;
+        char *addr;
+        char *addr6;
         int port;
-    } addr[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
+    } pcf_ip[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
     /* SBI Features */
     uint64_t management_features;
