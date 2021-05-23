@@ -204,3 +204,64 @@ void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type)
     else
         ogs_sbi_select_first_nf(&sess->sbi, nf_type, af_nf_state_registered);
 }
+
+static ogs_sbi_client_t *find_client_by_fqdn(char *fqdn, int port)
+{
+    int rv;
+    ogs_sockaddr_t *addr = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, fqdn,
+            port ? port : OGS_SBI_HTTPS_PORT, 0);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid NFProfile.fqdn");
+        return NULL;
+    }
+
+    client = ogs_sbi_client_find(addr);
+    if (!client) {
+        client = ogs_sbi_client_add(addr);
+        ogs_assert(client);
+    }
+
+    ogs_freeaddrinfo(addr);
+
+    return client;
+}
+
+void af_sess_associate_pcf_client(af_sess_t *sess)
+{
+    ogs_sbi_client_t *client = NULL;
+    ogs_sockaddr_t *addr = NULL;
+
+    ogs_assert(sess);
+
+    if (sess->pcf.fqdn && strlen(sess->pcf.fqdn))
+        client = find_client_by_fqdn(sess->pcf.fqdn, 0);
+
+    if (!client) {
+        /* At this point, CLIENT selection method is very simple. */
+        if (sess->pcf.num_of_ip) {
+            addr = sess->pcf.ip[0].addr6;
+            if (!addr)
+                addr = sess->pcf.ip[0].addr;
+        }
+
+        if (addr) {
+            client = ogs_sbi_client_find(addr);
+            if (!client) {
+                client = ogs_sbi_client_add(addr);
+                ogs_assert(client);
+            }
+        }
+    }
+
+    if (client) {
+        if (sess->pcf.client && sess->pcf.client != client) {
+            ogs_warn("PCF EndPoint updated");
+            ogs_sbi_client_remove(sess->pcf.client);
+        }
+
+        OGS_SETUP_SBI_CLIENT(&sess->pcf, client);
+    }
+}

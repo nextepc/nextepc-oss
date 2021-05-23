@@ -116,4 +116,6 @@ void af_nbsf_management_handle_pcf_binding(
             ogs_free(sess->gpsi);
         sess->gpsi = ogs_strdup(PcfBinding->gpsi);
     }
+
+    af_sess_associate_pcf_client(sess);
 }
