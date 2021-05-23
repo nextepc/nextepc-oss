@@ -36,7 +36,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     ogs_sbi_nf_service_t *nf_service = NULL;
 
     int i, fqdn_len;
-    char fqdn[OGS_MAX_FQDN_LEN+1];
+    char fqdn[OGS_MAX_FQDN_LEN];
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;

@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-bool af_nbsf_management_handle_pcf_binding(
+void af_nbsf_management_handle_pcf_binding(
         af_sess_t *sess, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus

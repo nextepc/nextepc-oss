@@ -142,6 +142,8 @@ af_sess_t *af_sess_add_by_ue_address(char *ipv4addr, char *ipv6prefix)
 
 void af_sess_remove(af_sess_t *sess)
 {
+    int i;
+
     ogs_assert(sess);
 
     ogs_list_remove(&self.sess_list, sess);
@@ -161,6 +163,20 @@ void af_sess_remove(af_sess_t *sess)
 
     if (sess->dnn)
         ogs_free(sess->dnn);
+
+    if (sess->pcf.fqdn)
+        ogs_free(sess->pcf.fqdn);
+
+    for (i = 0; i < sess->pcf.num_of_ip; i++) {
+        if (sess->pcf.ip[i].addr)
+            ogs_freeaddrinfo(sess->pcf.ip[i].addr);
+        if (sess->pcf.ip[i].addr6)
+            ogs_freeaddrinfo(sess->pcf.ip[i].addr6);
+    }
+    sess->pcf.num_of_ip = 0;
+
+    if (sess->pcf.client)
+        ogs_sbi_client_remove(sess->pcf.client);
 
     ogs_pool_free(&af_sess_pool, sess);
 }

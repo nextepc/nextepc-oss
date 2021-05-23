@@ -78,6 +78,15 @@ typedef struct af_sess_s {
     char *dnn;
 
     struct {
+        char *fqdn;
+
+        int num_of_ip;
+        struct {
+            ogs_sockaddr_t *addr;
+            ogs_sockaddr_t *addr6;
+            int port;
+        } ip[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
+
         ogs_sbi_client_t *client;
     } pcf;
 

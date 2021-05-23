@@ -34,7 +34,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
     OpenAPI_pcf_binding_t *RecvPcfBinding = NULL;
     OpenAPI_pcf_binding_t SendPcfBinding;
     OpenAPI_snssai_t Snssai;
-    char fqdn[OGS_MAX_FQDN_LEN];
+    char fqdn[OGS_MAX_FQDN_LEN+1];
+    int fqdn_len;
     uint64_t supported_features = 0;
 
     ogs_assert(stream);
@@ -213,6 +214,13 @@ bool bsf_nbsf_management_handle_pcf_binding(
                 PcfIpEndPointList = OpenAPI_list_create();
                 ogs_assert(PcfIpEndPointList);
 
+                if (sess->pcf_fqdn && strlen(sess->pcf_fqdn)) {
+                    memset(fqdn, 0, sizeof(fqdn));
+                    fqdn_len = ogs_fqdn_build(fqdn,
+                            sess->pcf_fqdn, strlen(sess->pcf_fqdn));
+                    SendPcfBinding.pcf_fqdn = ogs_memdup(fqdn, fqdn_len);
+                }
+
                 for (i = 0; i < sess->num_of_pcf_ip; i++) {
                     OpenAPI_ip_end_point_t *PcfIpEndPoint = NULL;
 
@@ -247,6 +255,9 @@ bool bsf_nbsf_management_handle_pcf_binding(
                         ogs_free(PcfIpEndPoint);
                 }
                 OpenAPI_list_free(SendPcfBinding.pcf_ip_end_points);
+
+                if (SendPcfBinding.pcf_fqdn)
+                    ogs_free(SendPcfBinding.pcf_fqdn);
             } else {
                 memset(&sendmsg, 0, sizeof(sendmsg));
                 response = ogs_sbi_build_response(
