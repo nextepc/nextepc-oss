@@ -275,7 +275,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_free(af_ipv4addr);
     ogs_free(af_ipv6prefix);
 
-#if 0
+#if 1
     af_local_discover_and_send(OpenAPI_nf_type_BSF, af_sess, NULL,
             af_nbsf_management_build_discover);
 

@@ -200,23 +200,61 @@ bool bsf_nbsf_management_handle_pcf_binding(
             break;
 
         CASE(OGS_SBI_HTTP_METHOD_GET)
-            memset(&Snssai, 0, sizeof(Snssai));
-            Snssai.sst = sess->s_nssai.sst;
-            Snssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
+            if (sess->num_of_pcf_ip) {
+                memset(&Snssai, 0, sizeof(Snssai));
+                Snssai.sst = sess->s_nssai.sst;
+                Snssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
 
-            memset(&SendPcfBinding, 0, sizeof(SendPcfBinding));
+                memset(&SendPcfBinding, 0, sizeof(SendPcfBinding));
 
-            SendPcfBinding.dnn = sess->dnn;
-            SendPcfBinding.snssai = &Snssai;
+                SendPcfBinding.dnn = sess->dnn;
+                SendPcfBinding.snssai = &Snssai;
 
-            memset(&sendmsg, 0, sizeof(sendmsg));
-            sendmsg.PcfBinding = &SendPcfBinding;
+                PcfIpEndPointList = OpenAPI_list_create();
+                ogs_assert(PcfIpEndPointList);
 
-            response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
-            ogs_assert(response);
-            ogs_sbi_server_send_response(stream, response);
+                for (i = 0; i < sess->num_of_pcf_ip; i++) {
+                    OpenAPI_ip_end_point_t *PcfIpEndPoint = NULL;
 
-            ogs_free(sendmsg.http.location);
+                    ogs_assert(sess->pcf_ip[i].addr || sess->pcf_ip[i].addr6);
+
+                    PcfIpEndPoint = ogs_calloc(1, sizeof(*PcfIpEndPoint));
+                    ogs_assert(PcfIpEndPoint);
+                    PcfIpEndPoint->ipv4_address = sess->pcf_ip[i].addr;
+                    PcfIpEndPoint->ipv6_address = sess->pcf_ip[i].addr6;
+                    PcfIpEndPoint->port = sess->pcf_ip[i].port;
+
+                    OpenAPI_list_add(PcfIpEndPointList, PcfIpEndPoint);
+                }
+
+                if (PcfIpEndPointList->count)
+                    SendPcfBinding.pcf_ip_end_points = PcfIpEndPointList;
+                else
+                    OpenAPI_list_free(PcfIpEndPointList);
+
+                memset(&sendmsg, 0, sizeof(sendmsg));
+                sendmsg.PcfBinding = &SendPcfBinding;
+
+                response = ogs_sbi_build_response(
+                            &sendmsg, OGS_SBI_HTTP_STATUS_OK);
+                ogs_assert(response);
+
+                ogs_sbi_server_send_response(stream, response);
+
+                OpenAPI_list_for_each(SendPcfBinding.pcf_ip_end_points, node) {
+                    OpenAPI_ip_end_point_t *PcfIpEndPoint = node->data;
+                    if (PcfIpEndPoint)
+                        ogs_free(PcfIpEndPoint);
+                }
+                OpenAPI_list_free(SendPcfBinding.pcf_ip_end_points);
+            } else {
+                memset(&sendmsg, 0, sizeof(sendmsg));
+                response = ogs_sbi_build_response(
+                            &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+                ogs_assert(response);
+
+                ogs_sbi_server_send_response(stream, response);
+            }
             break;
 
         DEFAULT
