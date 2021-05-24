@@ -65,6 +65,8 @@ const char *af_event_get_name(af_event_t *e)
         return "AF_EVT_SBI_SERVER";
     case AF_EVT_SBI_CLIENT:
         return "AF_EVT_SBI_CLIENT";
+    case AF_EVT_SBI_PCF_CLIENT:
+        return "AF_EVT_SBI_PCF_CLIENT";
     case AF_EVT_SBI_TIMER:
         return "AF_EVT_SBI_TIMER";
     case AF_EVT_SBI_LOCAL:

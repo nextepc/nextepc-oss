@@ -38,6 +38,10 @@ void af_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         af_sess_t *sess, void *data,
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data));
 
+void af_sbi_send_to_pcf(
+        af_sess_t *sess, void *data,
+        ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data));
+
 #ifdef __cplusplus
 }
 #endif
