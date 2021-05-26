@@ -219,7 +219,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                                     AppSessionContext->asc_req_data->ue_ipv4);
                         if (!sess &&
                             message.AppSessionContext->asc_req_data->ue_ipv6)
-                            sess = pcf_sess_find_by_ipv6prefix(message.
+                            sess = pcf_sess_find_by_ipv6addr(message.
                                     AppSessionContext->asc_req_data->ue_ipv6);
                     }
                 } else {

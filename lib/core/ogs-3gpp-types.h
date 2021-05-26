@@ -199,6 +199,7 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
 #define OGS_IPV4_LEN                        4
 #define OGS_IPV6_LEN                        16
 #define OGS_IPV6_DEFAULT_PREFIX_LEN         64
+#define OGS_IPV6_128_PREFIX_LEN             128
 #define OGS_IPV4V6_LEN                      20
 typedef struct ogs_ip_s {
     uint32_t addr;

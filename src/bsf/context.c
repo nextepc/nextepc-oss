@@ -254,6 +254,8 @@ bool bsf_sess_set_ipv6prefix(bsf_sess_t *sess, char *ipv6prefix_string)
             sess->ipv6prefix.addr6, &sess->ipv6prefix.len, ipv6prefix_string);
     ogs_expect_or_return_val(rv == OGS_OK, false);
 
+    ogs_assert(sess->ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
+
     sess->ipv6prefix_string = ogs_strdup(ipv6prefix_string);
     ogs_expect_or_return_val(sess->ipv6prefix_string, false);
 
@@ -315,6 +317,8 @@ bsf_sess_t *bsf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
     rv = ogs_ipv6prefix_from_string(
             ipv6prefix.addr6, &ipv6prefix.len, ipv6prefix_string);
     ogs_expect_or_return_val(rv == OGS_OK, NULL);
+
+    ogs_assert(ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
 
     return ogs_hash_get(self.ipv6prefix_hash,
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);

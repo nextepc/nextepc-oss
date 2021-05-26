@@ -266,7 +266,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_assert(af_ipv4addr);
 
     af_ipv6prefix = ogs_ipv6prefix_to_string(
-                    sess->ue_ip.addr6, OGS_IPV6_DEFAULT_PREFIX_LEN);
+                    sess->ue_ip.addr6, OGS_IPV6_128_PREFIX_LEN);
     ogs_assert(af_ipv6prefix);
 
     af_sess = af_sess_add_by_ue_address(af_ipv4addr, af_ipv6prefix);

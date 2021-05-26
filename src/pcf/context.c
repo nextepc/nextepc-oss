@@ -383,6 +383,8 @@ bool pcf_sess_set_ipv6prefix(pcf_sess_t *sess, char *ipv6prefix_string)
             sess->ipv6prefix.addr6, &sess->ipv6prefix.len, ipv6prefix_string);
     ogs_expect_or_return_val(rv == OGS_OK, false);
 
+    ogs_assert(sess->ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
+
     sess->ipv6prefix_string = ogs_strdup(ipv6prefix_string);
     ogs_expect_or_return_val(sess->ipv6prefix_string, false);
 
@@ -467,6 +469,27 @@ pcf_sess_t *pcf_sess_find_by_ipv4addr(char *ipv4addr_string)
     return ogs_hash_get(self.ipv4addr_hash, &ipv4addr, sizeof(ipv4addr));
 }
 
+pcf_sess_t *pcf_sess_find_by_ipv6addr(char *ipv6addr_string)
+{
+    int rv;
+    ogs_sockaddr_t tmp;
+    struct {
+        uint8_t len;
+        uint8_t addr6[OGS_IPV6_LEN];
+    } ipv6prefix;
+
+    ogs_assert(ipv6addr_string);
+
+    rv = ogs_inet_pton(AF_INET6, ipv6addr_string, &tmp);
+    ogs_expect_or_return_val(rv == OGS_OK, NULL);
+
+    memcpy(ipv6prefix.addr6, tmp.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+    ipv6prefix.len = OGS_IPV6_128_PREFIX_LEN;
+
+    return ogs_hash_get(self.ipv6prefix_hash,
+            &ipv6prefix, (ipv6prefix.len >> 3) + 1);
+}
+
 pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
 {
     int rv;
@@ -480,6 +503,8 @@ pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
     rv = ogs_ipv6prefix_from_string(
             ipv6prefix.addr6, &ipv6prefix.len, ipv6prefix_string);
     ogs_expect_or_return_val(rv == OGS_OK, NULL);
+
+    ogs_assert(ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
 
     return ogs_hash_get(self.ipv6prefix_hash,
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);

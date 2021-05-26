@@ -73,9 +73,10 @@ ogs_sbi_request_t *smf_npcf_smpolicycontrol_build_create(
         SmPolicyContextData.ipv4_address =
                 ogs_ipv4_to_string(sess->ipv4->addr[0]);
 
-    if (sess->ipv6)
+    if (sess->ipv6) {
         SmPolicyContextData.ipv6_address_prefix = ogs_ipv6prefix_to_string(
-                (uint8_t *)sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN);
+                (uint8_t *)sess->ipv6->addr, OGS_IPV6_128_PREFIX_LEN);
+    }
 
     memset(&SubsSessAmbr, 0, sizeof(SubsSessAmbr));
     if (OGS_SBI_FEATURES_IS_SET(sess->smpolicycontrol_features,
