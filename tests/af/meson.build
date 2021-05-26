@@ -29,6 +29,7 @@ libaf_sources = files('''
     nbsf-handler.c
 
     npcf-build.c
+    npcf-handler.c
 
     sbi-path.c
     af-sm.c

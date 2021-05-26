@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "nnrf-handler.h"
 #include "nbsf-handler.h"
+#include "npcf-handler.h"
 
 void af_state_initial(ogs_fsm_t *s, af_event_t *e)
 {
@@ -262,7 +263,10 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
                 sess = e->sbi.data;
                 ogs_assert(sess);
 
-                ogs_fatal("TODO");
+                if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED)
+                    af_npcf_policyauthorization_handle_create(sess, &message);
+                else
+                    ogs_error("HTTP response error [%d]", message.res_status);
                 break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",

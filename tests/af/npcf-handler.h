@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef AF_NBSF_HANDLER_H
-#define AF_NBSF_HANDLER_H
+#ifndef AF_NPCF_HANDLER_H
+#define AF_NPCF_HANDLER_H
 
 #include "context.h"
 
@@ -26,11 +26,11 @@
 extern "C" {
 #endif
 
-void af_nbsf_management_handle_pcf_binding(
+void af_npcf_policyauthorization_handle_create(
         af_sess_t *sess, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* AF_NBSF_HANDLER_H */
+#endif /* AF_NPCF_HANDLER_H */

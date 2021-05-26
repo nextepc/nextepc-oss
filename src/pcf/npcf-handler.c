@@ -290,6 +290,10 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     uint64_t supported_features = 0;
 
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    ogs_sbi_header_t header;
+
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
     ogs_assert(stream);
@@ -311,13 +315,39 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
+    if (!AscReqData->supp_feat) {
+        strerror = ogs_msprintf("[%s:%d] No AscReqData->suppFeat",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    if (!AscReqData->notif_uri) {
+        strerror = ogs_msprintf("[%s:%d] No AscReqData->notifUri",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
     supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
 #if 0
-    pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_UDR, sess, stream, NULL,
-            pcf_nudr_dr_build_query_sm_data);
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
+    header.resource.component[1] = (char *)"1";
+    header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_NOTIFY;
+    AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
+    ogs_assert(AscReqData.notif_uri);
 #endif
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(stream, response);
 
     return true;
 
