@@ -39,8 +39,10 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     OpenAPI_map_t *SubComponentMap = NULL;
     OpenAPI_media_sub_component_t *SubComponent = NULL;
 
+    OpenAPI_list_t *fDescList = NULL;
+
     int i, j;
-    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
 
     ogs_assert(sess);
     ogs_assert(sess->af_app_session_id);
@@ -126,6 +128,18 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     OpenAPI_list_add(SubComponentList, SubComponentMap);
 
+    /* Flow Description */
+    fDescList = OpenAPI_list_create();
+    ogs_assert(fDescList);
+
+    OpenAPI_list_add(fDescList,
+        ogs_msprintf("permit out 17 from 172.20.166.84 to 10.45.0.2 20001"));
+    OpenAPI_list_add(fDescList,
+        ogs_msprintf("permit in 17 from 10.45.0.2 to 172.20.166.84 20360"));
+
+    ogs_assert(fDescList->count);
+    SubComponent->f_descs = fDescList;
+
     /* Sub Component #2 */
     SubComponent = ogs_calloc(1, sizeof(*SubComponent));
     ogs_assert(SubComponent);
@@ -137,6 +151,18 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(SubComponentMap);
 
     OpenAPI_list_add(SubComponentList, SubComponentMap);
+
+    /* Flow Description */
+    fDescList = OpenAPI_list_create();
+    ogs_assert(fDescList);
+
+    OpenAPI_list_add(fDescList,
+        ogs_msprintf("permit out 17 from 172.20.166.84 to 10.45.0.2 20002"));
+    OpenAPI_list_add(fDescList,
+        ogs_msprintf("permit in 17 from 10.45.0.2 to 172.20.166.84 20361"));
+
+    ogs_assert(fDescList->count);
+    SubComponent->f_descs = fDescList;
 
     ogs_assert(SubComponentList->count);
     MediaComponent->med_sub_comps = SubComponentList;
@@ -164,6 +190,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
                     if (SubComponentMap) {
                         SubComponent = SubComponentMap->value;
                         if (SubComponent) {
+
+                            fDescList = SubComponent->f_descs;
+                            OpenAPI_list_for_each(fDescList, node3) {
+                                if (node3->data) ogs_free(node3->data);
+                            }
+                            OpenAPI_list_free(fDescList);
+
                             ogs_free(SubComponent);
                         }
                         if (SubComponentMap->key)
