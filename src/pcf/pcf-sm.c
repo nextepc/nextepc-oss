@@ -204,6 +204,34 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             }
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION)
+            SWITCH(message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_APP_SESSIONS)
+                if (!message.h.resource.component[1]) {
+                    if (message.AppSessionContext &&
+                        message.AppSessionContext->asc_req_data &&
+                        (message.AppSessionContext->asc_req_data->ue_ipv4 ||
+                         message.AppSessionContext->asc_req_data->ue_ipv6)) {
+
+                        if (!sess &&
+                            message.AppSessionContext->asc_req_data->ue_ipv4)
+                            sess = pcf_sess_find_by_ipv4addr(message.
+                                    AppSessionContext->asc_req_data->ue_ipv4);
+                        if (!sess &&
+                            message.AppSessionContext->asc_req_data->ue_ipv6)
+                            sess = pcf_sess_find_by_ipv6prefix(message.
+                                    AppSessionContext->asc_req_data->ue_ipv6);
+                    }
+                } else {
+                    sess = pcf_sess_find_by_app_session_id(
+                            message.h.resource.component[1]);
+                }
+                break;
+
+            DEFAULT
+            END
+
+
         DEFAULT
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_sbi_server_send_error(stream,

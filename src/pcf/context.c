@@ -387,6 +387,13 @@ pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id)
     return pcf_sess_find(atoll(sm_policy_id));
 }
 
+pcf_sess_t *pcf_sess_find_by_app_session_id(char *app_session_id)
+{
+    /* TODOTODOTODO */
+    ogs_assert(app_session_id);
+    return pcf_sess_find(atoll(app_session_id));
+}
+
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi)
 {
     pcf_sess_t *sess = NULL;

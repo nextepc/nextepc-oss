@@ -150,6 +150,7 @@ pcf_sess_t *pcf_sess_find(uint32_t index);
 pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id);
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi);
 pcf_sess_t *pcf_sess_find_by_dnn(pcf_ue_t *pcf_ue, char *dnn);
+pcf_sess_t *pcf_sess_find_by_app_session_id(char *app_session_id);
 pcf_sess_t *pcf_sess_find_by_ipv4addr(char *ipv4addr_string);
 pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string);
 
