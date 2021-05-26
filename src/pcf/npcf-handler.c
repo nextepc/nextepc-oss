@@ -201,9 +201,12 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
     sess->notification_uri = ogs_strdup(SmPolicyContextData->notification_uri);
 
     if (SmPolicyContextData->ipv4_address)
-        pcf_sess_set_ipv4addr(sess, SmPolicyContextData->ipv4_address);
+        ogs_assert(true ==
+            pcf_sess_set_ipv4addr(sess, SmPolicyContextData->ipv4_address));
     if (SmPolicyContextData->ipv6_address_prefix)
-        pcf_sess_set_ipv6prefix(sess, SmPolicyContextData->ipv6_address_prefix);
+        ogs_assert(true ==
+            pcf_sess_set_ipv6prefix(
+                sess, SmPolicyContextData->ipv6_address_prefix));
 
     sess->s_nssai.sst = sliceInfo->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sliceInfo->sd);

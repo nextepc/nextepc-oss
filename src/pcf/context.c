@@ -30,6 +30,7 @@ static int context_initialized = 0;
 
 static void clear_ipv4addr(pcf_sess_t *sess);
 static void clear_ipv6prefix(pcf_sess_t *sess);
+static void clear_app_session_id(pcf_sess_t *sess);
 
 void pcf_context_init(void)
 {
@@ -49,6 +50,7 @@ void pcf_context_init(void)
     self.supi_hash = ogs_hash_make();
     self.ipv4addr_hash = ogs_hash_make();
     self.ipv6prefix_hash = ogs_hash_make();
+    self.app_session_id_hash = ogs_hash_make();
 
     context_initialized = 1;
 }
@@ -65,6 +67,8 @@ void pcf_context_final(void)
     ogs_hash_destroy(self.ipv4addr_hash);
     ogs_assert(self.ipv6prefix_hash);
     ogs_hash_destroy(self.ipv6prefix_hash);
+    ogs_assert(self.app_session_id_hash);
+    ogs_hash_destroy(self.app_session_id_hash);
 
     ogs_pool_final(&pcf_sess_pool);
     ogs_pool_final(&pcf_ue_pool);
@@ -292,6 +296,7 @@ void pcf_sess_remove(pcf_sess_t *sess)
 
     clear_ipv4addr(sess);
     clear_ipv6prefix(sess);
+    clear_app_session_id(sess);
 
     if (sess->subscribed_sess_ambr)
         OpenAPI_ambr_free(sess->subscribed_sess_ambr);
@@ -330,6 +335,17 @@ static void clear_ipv6prefix(pcf_sess_t *sess)
         ogs_hash_set(self.ipv6prefix_hash,
                 &sess->ipv6prefix, (sess->ipv6prefix.len >> 3) + 1, NULL);
         ogs_free(sess->ipv6prefix_string);
+    }
+}
+
+static void clear_app_session_id(pcf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->app_session_id) {
+        ogs_hash_set(self.app_session_id_hash,
+                sess->app_session_id, strlen(sess->app_session_id), NULL);
+        ogs_free(sess->app_session_id);
     }
 }
 
@@ -376,6 +392,47 @@ bool pcf_sess_set_ipv6prefix(pcf_sess_t *sess, char *ipv6prefix_string)
     return true;
 }
 
+bool pcf_sess_set_app_session_id_location(
+        pcf_sess_t *sess, char *app_session_id_location)
+{
+    int rv;
+
+    ogs_sbi_message_t message;
+    ogs_sbi_header_t header;
+    char *app_session_id = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(app_session_id_location);
+
+    memset(&header, 0, sizeof(header));
+    header.uri = app_session_id_location;
+
+    rv = ogs_sbi_parse_header(&message, &header);
+    if (rv != OGS_OK) {
+        ogs_error("Cannot parse http.location [%s]", app_session_id_location);
+        return false;
+    }
+
+    app_session_id = message.h.resource.component[1];
+    if (!app_session_id) {
+        ogs_error("No appSessionId [%s", app_session_id_location);
+        ogs_sbi_header_free(&header);
+        return OGS_ERROR;
+    }
+
+    clear_app_session_id(sess);
+
+    sess->app_session_id = ogs_strdup(app_session_id);
+    ogs_expect_or_return_val(sess->app_session_id, false);
+
+    ogs_hash_set(self.app_session_id_hash,
+            sess->app_session_id, strlen(sess->app_session_id), sess);
+
+    ogs_sbi_header_free(&header);
+
+    return true;
+}
+
 pcf_sess_t *pcf_sess_find(uint32_t index)
 {
     return ogs_pool_find(&pcf_sess_pool, index);
@@ -385,13 +442,6 @@ pcf_sess_t *pcf_sess_find_by_sm_policy_id(char *sm_policy_id)
 {
     ogs_assert(sm_policy_id);
     return pcf_sess_find(atoll(sm_policy_id));
-}
-
-pcf_sess_t *pcf_sess_find_by_app_session_id(char *app_session_id)
-{
-    /* TODOTODOTODO */
-    ogs_assert(app_session_id);
-    return pcf_sess_find(atoll(app_session_id));
 }
 
 pcf_sess_t *pcf_sess_find_by_psi(pcf_ue_t *pcf_ue, uint8_t psi)
@@ -433,6 +483,13 @@ pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
 
     return ogs_hash_get(self.ipv6prefix_hash,
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);
+}
+
+pcf_sess_t *pcf_sess_find_by_app_session_id(char *app_session_id)
+{
+    ogs_assert(app_session_id);
+    return ogs_hash_get(self.app_session_id_hash, app_session_id,
+            strlen(app_session_id));
 }
 
 pcf_ue_t *pcf_ue_cycle(pcf_ue_t *pcf_ue)
