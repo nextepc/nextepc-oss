@@ -256,6 +256,21 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION)
+            SWITCH(message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_APP_SESSIONS)
+                sess = e->sbi.data;
+                ogs_assert(sess);
+
+                ogs_fatal("TODO");
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        message.h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         DEFAULT
             ogs_error("Invalid service name [%s]", message.h.service.name);
             ogs_assert_if_reached();

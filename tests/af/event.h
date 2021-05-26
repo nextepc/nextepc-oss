@@ -37,7 +37,6 @@ typedef enum {
 
     AF_EVT_SBI_SERVER,
     AF_EVT_SBI_CLIENT,
-    AF_EVT_SBI_PCF_CLIENT,
     AF_EVT_SBI_TIMER,
     AF_EVT_SBI_LOCAL,
 

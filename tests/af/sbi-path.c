@@ -65,28 +65,6 @@ static int client_cb(ogs_sbi_response_t *response, void *data)
     return OGS_OK;
 }
 
-static int pcf_client_cb(ogs_sbi_response_t *response, void *data)
-{
-    af_event_t *e = NULL;
-    int rv;
-
-    ogs_assert(response);
-
-    e = af_event_new(AF_EVT_SBI_PCF_CLIENT);
-    ogs_assert(e);
-    e->sbi.response = response;
-    e->sess = data;
-
-    rv = ogs_queue_push(ogs_app()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-        af_event_free(e);
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
 int af_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -197,5 +175,5 @@ void af_sbi_send_to_pcf(
 
     request = (*build)(sess, data);
     ogs_assert(request);
-    ogs_sbi_client_send_request(client, pcf_client_cb, request, sess);
+    ogs_sbi_client_send_request(client, client_cb, request, sess);
 }
