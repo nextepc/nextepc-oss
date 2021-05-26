@@ -34,8 +34,13 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     OpenAPI_list_t *MediaComponentList = NULL;
     OpenAPI_map_t *MediaComponentMap = NULL;
     OpenAPI_media_component_t *MediaComponent = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    int i, num_of_media_component;
+
+    OpenAPI_list_t *SubComponentList = NULL;
+    OpenAPI_map_t *SubComponentMap = NULL;
+    OpenAPI_media_sub_component_t *SubComponent = NULL;
+
+    int i, j;
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
 
     ogs_assert(sess);
     ogs_assert(sess->af_app_session_id);
@@ -86,28 +91,55 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     AscReqData.supi = sess->supi;
     AscReqData.gpsi = sess->gpsi;
 
-    num_of_media_component = 1;
+    /* Media Component */
+    i = 0, j = 0;
 
     MediaComponentList = OpenAPI_list_create();
     ogs_assert(MediaComponentList);
 
-    for (i = 0; i < num_of_media_component; i++) {
-        MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
-        ogs_assert(MediaComponent);
+    MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
+    ogs_assert(MediaComponent);
 
-        MediaComponent->med_comp_n = i+1;
+    MediaComponent->med_comp_n = (++i);
 
-        MediaComponentMap = OpenAPI_map_create(
-                ogs_msprintf("%d", MediaComponent->med_comp_n), MediaComponent);
-        ogs_assert(MediaComponentMap);
+    MediaComponentMap = OpenAPI_map_create(
+            ogs_msprintf("%d", MediaComponent->med_comp_n), MediaComponent);
+    ogs_assert(MediaComponentMap);
 
-        OpenAPI_list_add(MediaComponentList, MediaComponentMap);
-    }
+    OpenAPI_list_add(MediaComponentList, MediaComponentMap);
 
-    if (MediaComponentList->count)
-        AscReqData.med_components = MediaComponentList;
-    else
-        OpenAPI_list_free(MediaComponentList);
+    ogs_assert(MediaComponentList->count);
+    AscReqData.med_components = MediaComponentList;
+
+    SubComponentList = OpenAPI_list_create();
+    ogs_assert(SubComponentList);
+
+    /* Sub Component #1 */
+    SubComponent = ogs_calloc(1, sizeof(*SubComponent));
+    ogs_assert(SubComponent);
+
+    SubComponent->f_num = (++j);
+
+    SubComponentMap = OpenAPI_map_create(
+            ogs_msprintf("%d", SubComponent->f_num), SubComponent);
+    ogs_assert(SubComponentMap);
+
+    OpenAPI_list_add(SubComponentList, SubComponentMap);
+
+    /* Sub Component #2 */
+    SubComponent = ogs_calloc(1, sizeof(*SubComponent));
+    ogs_assert(SubComponent);
+
+    SubComponent->f_num = (++j);
+
+    SubComponentMap = OpenAPI_map_create(
+            ogs_msprintf("%d", SubComponent->f_num), SubComponent);
+    ogs_assert(SubComponentMap);
+
+    OpenAPI_list_add(SubComponentList, SubComponentMap);
+
+    ogs_assert(SubComponentList->count);
+    MediaComponent->med_sub_comps = SubComponentList;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
@@ -125,18 +157,22 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
         if (MediaComponentMap) {
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
-#if 0
-                DnnInfoList = MediaComponent->dnn_infos;
-                if (DnnInfoList) {
-                    OpenAPI_list_for_each(DnnInfoList, node2) {
-                        DnnInfo = node2->data;
-                        if (DnnInfo) {
-                            ogs_free(DnnInfo);
+
+                SubComponentList = MediaComponent->med_sub_comps;
+                OpenAPI_list_for_each(SubComponentList, node2) {
+                    SubComponentMap = node2->data;
+                    if (SubComponentMap) {
+                        SubComponent = SubComponentMap->value;
+                        if (SubComponent) {
+                            ogs_free(SubComponent);
                         }
+                        if (SubComponentMap->key)
+                            ogs_free(SubComponentMap->key);
+                        ogs_free(SubComponentMap);
                     }
-                    OpenAPI_list_free(DnnInfoList);
                 }
-#endif
+                OpenAPI_list_free(SubComponentList);
+
                 ogs_free(MediaComponent);
             }
             if (MediaComponentMap->key)
