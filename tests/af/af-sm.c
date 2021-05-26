@@ -326,6 +326,9 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
             af_sbi_discover_and_send(e->local.target_nf_type,
                     e->sess, e->local.data, e->local.build);
             break;
+        case AF_LOCAL_SEND_TO_PCF:
+            af_sbi_send_to_pcf(e->sess, e->local.data, e->local.build);
+            break;
         default:
             ogs_error("Unknown local[%s:%d]",
                     af_local_get_name(e->local_id), e->local_id);

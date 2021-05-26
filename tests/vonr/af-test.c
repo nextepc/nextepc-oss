@@ -279,6 +279,12 @@ static void test1_func(abts_case *tc, void *data)
     af_local_discover_and_send(OpenAPI_nf_type_BSF, af_sess, NULL,
             af_nbsf_management_build_discover);
 
+    /* Wait for PCF-Discovery */
+    ogs_msleep(100);
+
+    af_local_send_to_pcf(af_sess, NULL,
+            af_npcf_policyauthorization_build_create);
+
     ogs_msleep(300);
 #endif
 

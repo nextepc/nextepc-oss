@@ -31,6 +31,7 @@ typedef enum {
     AF_LOCAL_BASE = 0,
 
     AF_LOCAL_DISCOVER_AND_SEND,
+    AF_LOCAL_SEND_TO_PCF,
 
     MAX_NUM_OF_AF_LOCAL,
 
@@ -39,6 +40,10 @@ typedef enum {
 const char *af_local_get_name(af_local_e id);
 
 void af_local_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+        af_sess_t *sess, void *data,
+        ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data));
+
+void af_local_send_to_pcf(
         af_sess_t *sess, void *data,
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data));
 

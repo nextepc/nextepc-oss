@@ -69,6 +69,7 @@
 #include "model/slice_info_for_pdu_session.h"
 #include "model/authorized_network_slice_info.h"
 #include "model/pcf_binding.h"
+#include "model/app_session_context.h"
 
 #include "custom/links.h"
 

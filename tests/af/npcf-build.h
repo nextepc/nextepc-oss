@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,34 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef AF_SBI_PATH_H
-#define AF_SBI_PATH_H
+#ifndef AF_NPCF_BUILD_H
+#define AF_NPCF_BUILD_H
 
-#include "nnrf-build.h"
-#include "nbsf-build.h"
-#include "npcf-build.h"
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int af_sbi_open(void);
-void af_sbi_close(void);
-
-void af_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-
-void af_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
-
-void af_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
-        af_sess_t *sess, void *data,
-        ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data));
-
-void af_sbi_send_to_pcf(
-        af_sess_t *sess, void *data,
-        ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data));
+ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
+        af_sess_t *sess, void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* AF_SBI_PATH_H */
+#endif /* AF_NPCF_BUILD_H */

@@ -57,3 +57,29 @@ void af_local_discover_and_send(OpenAPI_nf_type_e target_nf_type,
         ogs_pollset_notify(ogs_app()->pollset);
     }
 }
+
+void af_local_send_to_pcf(
+        af_sess_t *sess, void *data,
+        ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data))
+{
+    int rv;
+    af_event_t *e = NULL;
+
+    e = af_event_new(AF_EVT_SBI_LOCAL);
+    ogs_assert(e);
+
+    e->local_id = AF_LOCAL_SEND_TO_PCF;
+    e->sess = sess;
+
+    e->local.data = data;
+    e->local.build = build;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed [%d] in %s",
+                (int)rv, af_timer_get_name(e->timer_id));
+        af_event_free(e);
+    } else {
+        ogs_pollset_notify(ogs_app()->pollset);
+    }
+}
