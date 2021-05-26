@@ -27,6 +27,8 @@ static OGS_POOL(af_sess_pool, af_sess_t);
 
 static int context_initialized = 0;
 
+static void clear_pcf_app_session_id(af_sess_t *sess);
+
 void af_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -41,6 +43,7 @@ void af_context_init(void)
     self.supi_hash = ogs_hash_make();
     self.ipv4_hash = ogs_hash_make();
     self.ipv6_hash = ogs_hash_make();
+    self.pcf_app_session_id_hash = ogs_hash_make();
 
     context_initialized = 1;
 }
@@ -57,6 +60,8 @@ void af_context_final(void)
     ogs_hash_destroy(self.ipv4_hash);
     ogs_assert(self.ipv6_hash);
     ogs_hash_destroy(self.ipv6_hash);
+    ogs_assert(self.pcf_app_session_id_hash);
+    ogs_hash_destroy(self.pcf_app_session_id_hash);
 
     ogs_pool_final(&af_sess_pool);
 
@@ -127,6 +132,9 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
     ogs_expect_or_return_val(sess, NULL);
     memset(sess, 0, sizeof *sess);
 
+    sess->af_app_session_id = ogs_msprintf("%d",
+            (int)ogs_pool_index(&af_sess_pool, sess));
+
     if (ue_address->ipv4 && ue_address->addr) {
         sess->ipv4addr = ogs_ipv4_to_string(ue_address->addr);
         ogs_expect_or_return_val(sess->ipv4addr, NULL);
@@ -157,6 +165,11 @@ void af_sess_remove(af_sess_t *sess)
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
+
+    if (sess->af_app_session_id)
+        ogs_free(sess->af_app_session_id);
+
+    clear_pcf_app_session_id(sess);
 
     if (sess->ipv4addr)
         ogs_free(sess->ipv4addr);
@@ -198,9 +211,42 @@ void af_sess_remove_all(void)
         af_sess_remove(sess);
 }
 
+static void clear_pcf_app_session_id(af_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->pcf_app_session_id) {
+        ogs_hash_set(self.pcf_app_session_id_hash,
+            &sess->pcf_app_session_id, sizeof(sess->pcf_app_session_id), NULL);
+        ogs_free(sess->pcf_app_session_id);
+    }
+}
+
+bool af_sess_set_pcf_app_session_id(af_sess_t *sess, char *pcf_app_session_id)
+{
+    ogs_assert(sess);
+    ogs_assert(pcf_app_session_id);
+
+    clear_pcf_app_session_id(sess);
+
+    sess->pcf_app_session_id = ogs_strdup(pcf_app_session_id);
+    ogs_expect_or_return_val(sess->pcf_app_session_id, false);
+
+    ogs_hash_set(self.pcf_app_session_id_hash,
+            &sess->pcf_app_session_id, sizeof(sess->pcf_app_session_id), sess);
+
+    return true;
+}
+
 af_sess_t *af_sess_find(uint32_t index)
 {
     return ogs_pool_find(&af_sess_pool, index);
+}
+
+af_sess_t *af_sess_find_by_af_app_session_id(char *af_app_session_id)
+{
+    ogs_assert(af_app_session_id);
+    return af_sess_find(atoll(af_app_session_id));
 }
 
 void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type)

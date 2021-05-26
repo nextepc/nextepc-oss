@@ -290,14 +290,20 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     uint64_t supported_features = 0;
 
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_header_t header;
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
-    ogs_sbi_header_t header;
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
     ogs_assert(stream);
     ogs_assert(recvmsg);
+
+    ogs_assert(sess->app_session_id);
+
+    server = ogs_sbi_server_from_stream(stream);
+    ogs_assert(server);
 
     AppSessionContext = recvmsg->AppSessionContext;
     if (!AppSessionContext) {
@@ -332,22 +338,21 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
 
-#if 0
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
-    header.resource.component[1] = (char *)"1";
-    header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_NOTIFY;
-    AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
-    ogs_assert(AscReqData.notif_uri);
-#endif
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
+    header.resource.component[1] = (char *)sess->app_session_id;
+    sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+    ogs_assert(sendmsg.http.location);
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
     ogs_sbi_server_send_response(stream, response);
+
+    ogs_free(sendmsg.http.location);
 
     return true;
 

@@ -260,6 +260,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     header.resource.component[1] = sess->sm_context_ref;
 
     sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+    ogs_assert(sendmsg.http.location);
 
     sendmsg.SmContextCreatedData = &SmContextCreatedData;
 

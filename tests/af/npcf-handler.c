@@ -23,6 +23,45 @@
 void af_npcf_policyauthorization_handle_create(
         af_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
+    int rv;
+
+    ogs_sbi_message_t message;
+    ogs_sbi_header_t header;
+
+    if (!recvmsg->http.location) {
+        ogs_error("[%s:%s] No http.location",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown");
+        return;
+    }
+
+    memset(&header, 0, sizeof(header));
+    header.uri = recvmsg->http.location;
+
+    rv = ogs_sbi_parse_header(&message, &header);
+    if (rv != OGS_OK) {
+        ogs_error("[%s:%s] Cannot parse http.location [%s]",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown",
+                recvmsg->http.location);
+        return;
+    }
+
+    if (!message.h.resource.component[1]) {
+        ogs_error("[%s:%s] No AppSessionId[%s]",
+                sess->ipv4addr ? sess->ipv4addr : "Unknown",
+                sess->ipv6addr ? sess->ipv6addr : "Unknown",
+                recvmsg->http.location);
+
+        ogs_sbi_header_free(&header);
+        return;
+    }
+
+    af_sess_set_pcf_app_session_id(sess, message.h.resource.component[1]);
+
+    ogs_sbi_header_free(&header);
+
+
     ogs_fatal("TODO");
 #if 0
     int i, rv;

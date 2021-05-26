@@ -43,6 +43,7 @@ typedef struct af_context_s {
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
+    ogs_hash_t      *pcf_app_session_id_hash; /* hash table (AppSessionId) */
 
     ogs_list_t      sess_list;
 } af_context_t;
@@ -69,6 +70,9 @@ typedef struct af_sess_s {
     ogs_sbi_object_t sbi;
 
     uint64_t policyauthorization_features;
+
+    char *af_app_session_id;
+    char *pcf_app_session_id;
 
     char *ipv4addr;
     char *ipv6addr;
@@ -105,7 +109,11 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address);
 void af_sess_remove(af_sess_t *sess);
 void af_sess_remove_all(void);
 
+bool af_sess_set_pcf_app_session_id(af_sess_t *sess, char *pcf_app_session_id);
+
 af_sess_t *af_sess_find(uint32_t index);
+af_sess_t *af_sess_find_by_af_app_session_id(char *af_app_session_id);
+af_sess_t *af_sess_find_by_pcf_app_session_id(char *pcf_app_session_id);
 
 void af_sess_select_nf(af_sess_t *sess, OpenAPI_nf_type_e nf_type);
 

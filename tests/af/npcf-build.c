@@ -38,6 +38,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     int i, num_of_media_component;
 
     ogs_assert(sess);
+    ogs_assert(sess->af_app_session_id);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
@@ -61,7 +62,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
-    header.resource.component[1] = (char *)"1";
+    header.resource.component[1] = (char *)sess->af_app_session_id;
     header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_NOTIFY;
     AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
     ogs_assert(AscReqData.notif_uri);
