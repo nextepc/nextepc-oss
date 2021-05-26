@@ -26,6 +26,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_app_session_context_t AppSessionContext;
+    OpenAPI_app_session_context_req_data_t AscReqData;
 
     ogs_assert(sess);
 
@@ -37,9 +38,17 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
 
-    memset(&AppSessionContext, 0, sizeof(AppSessionContext));
-
     message.AppSessionContext = &AppSessionContext;
+
+    memset(&AppSessionContext, 0, sizeof(AppSessionContext));
+    AppSessionContext.asc_req_data = &AscReqData;
+
+    memset(&AscReqData, 0, sizeof(AscReqData));
+
+    AscReqData.ue_ipv4 = sess->ipv4addr;
+    AscReqData.ue_ipv6 = sess->ipv6addr;
+    AscReqData.notif_uri = "test";
+    AscReqData.supp_feat = "1234";
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);

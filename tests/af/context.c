@@ -116,23 +116,27 @@ int af_context_parse_config(void)
     return OGS_OK;
 }
 
-af_sess_t *af_sess_add_by_ue_address(char *ipv4addr, char *ipv6prefix)
+af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
 {
     af_sess_t *sess = NULL;
 
-    ogs_assert(ipv4addr || ipv6prefix);
+    ogs_assert(ue_address);
+    ogs_assert(ue_address->ipv4 || ue_address->ipv6);
 
     ogs_pool_alloc(&af_sess_pool, &sess);
     ogs_expect_or_return_val(sess, NULL);
     memset(sess, 0, sizeof *sess);
 
-    if (ipv4addr) {
-        sess->ipv4addr = ogs_strdup(ipv4addr);
+    if (ue_address->ipv4 && ue_address->addr) {
+        sess->ipv4addr = ogs_ipv4_to_string(ue_address->addr);
         ogs_expect_or_return_val(sess->ipv4addr, NULL);
     }
-    if (ipv6prefix) {
-        sess->ipv6prefix = ogs_strdup(ipv6prefix);
-        ogs_expect_or_return_val(sess->ipv6prefix, NULL);
+
+    if (ue_address->ipv6 && ue_address->addr6) {
+        sess->ipv6addr = ogs_ipv6addr_to_string(ue_address->addr6);
+        ogs_expect_or_return_val(sess->ipv6addr, NULL);
+        sess->ipv6prefix = ogs_ipv6prefix_to_string(
+                ue_address->addr6, OGS_IPV6_128_PREFIX_LEN);
     }
 
     ogs_list_add(&self.sess_list, sess);
@@ -153,6 +157,8 @@ void af_sess_remove(af_sess_t *sess)
 
     if (sess->ipv4addr)
         ogs_free(sess->ipv4addr);
+    if (sess->ipv6addr)
+        ogs_free(sess->ipv6addr);
     if (sess->ipv6prefix)
         ogs_free(sess->ipv6prefix);
 

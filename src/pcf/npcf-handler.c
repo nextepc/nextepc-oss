@@ -270,3 +270,53 @@ cleanup:
 
     return false;
 }
+
+bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    int status = 0;
+    char *strerror = NULL;
+    pcf_ue_t *pcf_ue = NULL;
+
+    OpenAPI_app_session_context_t *AppSessionContext = NULL;
+    OpenAPI_app_session_context_req_data_t *AscReqData = NULL;
+
+    uint64_t supported_features = 0;
+
+    ogs_assert(sess);
+    pcf_ue = sess->pcf_ue;
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    AppSessionContext = recvmsg->AppSessionContext;
+    if (!AppSessionContext) {
+        strerror = ogs_msprintf("[%s:%d] No AppSessionContext",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+    AscReqData = AppSessionContext->asc_req_data;
+    if (!AscReqData) {
+        strerror = ogs_msprintf("[%s:%d] No AscReqData",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
+#if 0
+    pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_UDR, sess, stream, NULL,
+            pcf_nudr_dr_build_query_sm_data);
+#endif
+
+    return true;
+
+cleanup:
+    ogs_assert(status);
+    ogs_assert(strerror);
+    ogs_error("%s", strerror);
+    ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL);
+    ogs_free(strerror);
+
+    return false;
+}

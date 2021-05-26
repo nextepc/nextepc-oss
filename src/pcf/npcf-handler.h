@@ -34,6 +34,9 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
 bool pcf_npcf_smpolicycontrtol_handle_delete(pcf_sess_t *sess,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
+bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+
 #ifdef __cplusplus
 }
 #endif

@@ -69,6 +69,7 @@ typedef struct af_sess_s {
     ogs_sbi_object_t sbi;
 
     char *ipv4addr;
+    char *ipv6addr;
     char *ipv6prefix;
 
     char *supi;
@@ -98,7 +99,7 @@ af_context_t *af_self(void);
 
 int af_context_parse_config(void);
 
-af_sess_t *af_sess_add_by_ue_address(char *ipv4addr, char *ipv6prefix);
+af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address);
 void af_sess_remove(af_sess_t *sess);
 void af_sess_remove_all(void);
 

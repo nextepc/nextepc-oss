@@ -44,8 +44,6 @@ static void test1_func(abts_case *tc, void *data)
     test_bearer_t *qos_flow = NULL;
 
     af_sess_t *af_sess = NULL;
-    char *af_ipv4addr = NULL;
-    char *af_ipv6prefix = NULL;
 
     bson_t *doc = NULL;
 
@@ -261,19 +259,8 @@ static void test1_func(abts_case *tc, void *data)
     testgtpu_recv(test_ue, recvbuf);
 
     /* Add AF-Session */
-    ogs_assert(sess->ue_ip.ipv4 && sess->ue_ip.ipv6);
-    af_ipv4addr = ogs_ipv4_to_string(sess->ue_ip.addr);
-    ogs_assert(af_ipv4addr);
-
-    af_ipv6prefix = ogs_ipv6prefix_to_string(
-                    sess->ue_ip.addr6, OGS_IPV6_128_PREFIX_LEN);
-    ogs_assert(af_ipv6prefix);
-
-    af_sess = af_sess_add_by_ue_address(af_ipv4addr, af_ipv6prefix);
+    af_sess = af_sess_add_by_ue_address(&sess->ue_ip);
     ogs_assert(af_sess);
-
-    ogs_free(af_ipv4addr);
-    ogs_free(af_ipv6prefix);
 
 #if 0
     af_local_discover_and_send(OpenAPI_nf_type_BSF, af_sess, NULL,
