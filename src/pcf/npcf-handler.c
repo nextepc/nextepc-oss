@@ -182,6 +182,13 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
+    if (!sliceInfo->sst) {
+        strerror = ogs_msprintf("[%s:%d] No sliceInfo->sst",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
     if (SmPolicyContextData->supp_feat) {
         supported_features =
             ogs_uint64_from_string(SmPolicyContextData->supp_feat);
@@ -303,6 +310,9 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
+
+    supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
+    sess->policyauthorization_features &= supported_features;
 
 #if 0
     pcf_sess_sbi_discover_and_send(OpenAPI_nf_type_UDR, sess, stream, NULL,

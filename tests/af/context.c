@@ -139,6 +139,9 @@ af_sess_t *af_sess_add_by_ue_address(ogs_ip_t *ue_address)
                 ue_address->addr6, OGS_IPV6_128_PREFIX_LEN);
     }
 
+    OGS_SBI_FEATURES_SET(sess->policyauthorization_features,
+            OGS_SBI_NPCF_POLICYAUTHORIZATION_IMS_SBI);
+
     ogs_list_add(&self.sess_list, sess);
 
     return sess;

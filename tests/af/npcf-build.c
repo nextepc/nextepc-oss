@@ -24,9 +24,12 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_header_t header;
 
     OpenAPI_app_session_context_t AppSessionContext;
     OpenAPI_app_session_context_req_data_t AscReqData;
+    OpenAPI_snssai_t sNssai;
 
     ogs_assert(sess);
 
@@ -45,13 +48,44 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
 
     memset(&AscReqData, 0, sizeof(AscReqData));
 
+    server = ogs_list_first(&ogs_sbi_self()->server_list);
+    ogs_assert(server);
+
+    memset(&header, 0, sizeof(header));
+    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
+    header.api.version = (char *)OGS_SBI_API_V1;
+    header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
+    header.resource.component[1] = (char *)"1";
+    header.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_NOTIFY;
+    AscReqData.notif_uri = ogs_sbi_server_uri(server, &header);
+    ogs_assert(AscReqData.notif_uri);
+
+    AscReqData.supp_feat =
+        ogs_uint64_to_string(sess->policyauthorization_features);
+    ogs_assert(AscReqData.supp_feat);
+
     AscReqData.ue_ipv4 = sess->ipv4addr;
     AscReqData.ue_ipv6 = sess->ipv6addr;
-    AscReqData.notif_uri = "test";
-    AscReqData.supp_feat = "1234";
+
+    AscReqData.dnn = sess->dnn;
+
+    memset(&sNssai, 0, sizeof(sNssai));
+    if (sess->s_nssai.sst) {
+        sNssai.sst = sess->s_nssai.sst;
+        sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);
+        AscReqData.slice_info = &sNssai;
+    }
+
+    AscReqData.supi = sess->supi;
+    AscReqData.gpsi = sess->gpsi;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
+
+    ogs_free(AscReqData.supp_feat);
+
+    if (sNssai.sd)
+        ogs_free(sNssai.sd);
 
     return request;
 }

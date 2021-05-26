@@ -99,6 +99,7 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
     else
         OpenAPI_list_free(PcfIpEndPointList);
 
+    ogs_assert(sess->s_nssai.sst);
     memset(&sNssai, 0, sizeof(sNssai));
     sNssai.sst = sess->s_nssai.sst;
     sNssai.sd = ogs_s_nssai_sd_to_string(sess->s_nssai.sd);

@@ -122,6 +122,7 @@ struct pcf_sess_s {
     /* SBI Features */
     uint64_t smpolicycontrol_features;
     uint64_t management_features;
+    uint64_t policyauthorization_features;
 
     OpenAPI_ambr_t *subscribed_sess_ambr;
     OpenAPI_subscribed_default_qos_t *subscribed_default_qos;

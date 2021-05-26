@@ -68,6 +68,8 @@ typedef struct af_sess_s af_sess_t;
 typedef struct af_sess_s {
     ogs_sbi_object_t sbi;
 
+    uint64_t policyauthorization_features;
+
     char *ipv4addr;
     char *ipv6addr;
     char *ipv6prefix;
