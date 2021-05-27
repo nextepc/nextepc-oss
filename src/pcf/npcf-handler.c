@@ -428,6 +428,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     sendmsg.http.location = ogs_sbi_server_uri(server, &header);
     ogs_assert(sendmsg.http.location);
 
+    sendmsg.AppSessionContext = recvmsg->AppSessionContext;
+
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_CREATED);
     ogs_assert(response);
     ogs_sbi_server_send_response(stream, response);
