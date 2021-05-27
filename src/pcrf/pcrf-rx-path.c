@@ -105,6 +105,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_diam_rx_message_t rx_message;
     ogs_media_component_t *media_component = NULL;
     ogs_media_sub_component_t *sub = NULL;
+    ogs_flow_t *flow = NULL;
 
     char buf[OGS_ADDRSTRLEN];
     os0_t gx_sid = NULL;
@@ -280,9 +281,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                 hdr->avp_value->i32;
                             break;
                         case OGS_DIAM_RX_AVP_CODE_FLOW_DESCRIPTION:
-                        {
-                            ogs_flow_t *flow = &sub->flow
-                                [sub->num_of_flow];
+                            flow = &sub->flow[sub->num_of_flow];
 
                             /* IE (IPV4-local-addr field ) is not supported on
                              * the LTE pre release-11 UEs. In order for the call
@@ -386,7 +385,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
                             sub->num_of_flow++;
                             break;
-                        }
                         default:
                             ogs_error("Not supported(%d)",
                                     hdr->avp_code);

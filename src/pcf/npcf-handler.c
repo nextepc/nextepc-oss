@@ -295,6 +295,22 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
+    ogs_ims_data_t ims_data;
+    ogs_media_component_t *media_component = NULL;
+    ogs_media_sub_component_t *sub = NULL;
+
+    OpenAPI_list_t *MediaComponentList = NULL;
+    OpenAPI_map_t *MediaComponentMap = NULL;
+    OpenAPI_media_component_t *MediaComponent = NULL;
+
+    OpenAPI_list_t *SubComponentList = NULL;
+    OpenAPI_map_t *SubComponentMap = NULL;
+    OpenAPI_media_sub_component_t *SubComponent = NULL;
+
+    OpenAPI_list_t *fDescList = NULL;
+
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
+
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
     ogs_assert(stream);
@@ -335,8 +351,72 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
+    if (!AscReqData->med_components) {
+        strerror = ogs_msprintf("[%s:%d] No AscReqData->MediaCompoenent",
+                pcf_ue->supi, sess->psi);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
     supported_features = ogs_uint64_from_string(AscReqData->supp_feat);
     sess->policyauthorization_features &= supported_features;
+
+    memset(&ims_data, 0, sizeof(ims_data));
+    media_component = &ims_data.
+        media_component[ims_data.num_of_media_component];
+
+    MediaComponentList = AscReqData->med_components;
+    OpenAPI_list_for_each(MediaComponentList, node) {
+        MediaComponentMap = node->data;
+        if (MediaComponentMap) {
+            MediaComponent = MediaComponentMap->value;
+            if (MediaComponent) {
+                media_component->media_component_number =
+                    MediaComponent->med_comp_n;
+                media_component->media_type = MediaComponent->med_type;
+                if (MediaComponent->mar_bw_dl)
+                    media_component->max_requested_bandwidth_dl =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mar_bw_dl);
+                if (MediaComponent->mar_bw_ul)
+                    media_component->max_requested_bandwidth_ul =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mar_bw_ul);
+                if (MediaComponent->mir_bw_dl)
+                    media_component->min_requested_bandwidth_dl =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mir_bw_dl);
+                if (MediaComponent->mir_bw_ul)
+                    media_component->min_requested_bandwidth_ul =
+                        ogs_sbi_bitrate_from_string(MediaComponent->mir_bw_ul);
+                media_component->flow_status = MediaComponent->f_status;
+
+                sub = &media_component->sub[media_component->num_of_sub];
+
+                SubComponentList = MediaComponent->med_sub_comps;
+                OpenAPI_list_for_each(SubComponentList, node2) {
+                    SubComponentMap = node2->data;
+                    if (SubComponentMap) {
+                        SubComponent = SubComponentMap->value;
+                        if (SubComponent) {
+                            sub->flow_number = SubComponent->f_num;
+                            sub->flow_usage = SubComponent->flow_usage;
+
+                            fDescList = SubComponent->f_descs;
+                            OpenAPI_list_for_each(fDescList, node3) {
+                                ogs_flow_t *flow = &sub->flow[sub->num_of_flow];
+                                if (node3->data) {
+                                    flow->description = ogs_strdup(node3->data);
+                                    ogs_assert(flow->description);
+
+                                    sub->num_of_flow++;
+                                }
+                            }
+                        }
+                    }
+                    media_component->num_of_sub++;
+                }
+            }
+        }
+        ims_data.num_of_media_component++;
+    }
 
     memset(&sendmsg, 0, sizeof(sendmsg));
 
@@ -354,6 +434,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
 
     ogs_free(sendmsg.http.location);
 
+    ogs_ims_data_free(&ims_data);
+
     return true;
 
 cleanup:
@@ -362,6 +444,8 @@ cleanup:
     ogs_error("%s", strerror);
     ogs_sbi_server_send_error(stream, status, recvmsg, strerror, NULL);
     ogs_free(strerror);
+
+    ogs_ims_data_free(&ims_data);
 
     return false;
 }
