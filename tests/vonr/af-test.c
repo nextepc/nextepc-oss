@@ -258,6 +258,41 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testgtpu_recv(test_ue, recvbuf);
 
+#if 0
+    /* Send PDU session establishment request */
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "ims", 6);
+    ogs_assert(sess);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
+    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
+
     /* Add AF-Session */
     af_sess = af_sess_add_by_ue_address(&sess->ue_ip);
     ogs_assert(af_sess);
