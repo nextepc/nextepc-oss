@@ -321,8 +321,7 @@ typedef struct ogs_flow_s {
 
 #define OGS_FLOW_FREE(__fLOW) \
     do { \
-        if ((__fLOW)->description) \
-        { \
+        if ((__fLOW)->description) { \
             ogs_free((__fLOW)->description); \
         } \
         else \
@@ -344,11 +343,6 @@ typedef struct ogs_pcc_rule_s {
     ogs_flow_t flow[OGS_MAX_NUM_OF_FLOW];
     int num_of_flow;
 
-#define OGS_FLOW_STATUS_ENABLED_UPLINK          0
-#define OGS_FLOW_STATUS_ENABLED_DOWNLINK        1
-#define OGS_FLOW_STATUS_ENABLED                 2
-#define OGS_FLOW_STATUS_DISABLED                3
-#define OGS_FLOW_STATUS_REMOVE                  4
     int flow_status;
     uint32_t precedence;
         
@@ -633,9 +627,6 @@ void ogs_session_data_free(ogs_session_data_t *session_data);
 
 typedef struct ogs_media_sub_component_s {
     uint32_t            flow_number;
-#define OGS_FLOW_USAGE_NO_INFORMATION       0
-#define OGS_FLOW_USAGE_RTCP                 1
-#define OGS_FLOW_USAGE_AF_SIGNALLING        2
     uint32_t            flow_usage;
     ogs_flow_t          flow[OGS_MAX_NUM_OF_FLOW];
     int                 num_of_flow;
@@ -643,14 +634,6 @@ typedef struct ogs_media_sub_component_s {
 
 typedef struct ogs_media_component_s {
     uint32_t            media_component_number;
-#define OGS_MEDIA_TYPE_AUDIO                0
-#define OGS_MEDIA_TYPE_VIDEO                1
-#define OGS_MEDIA_TYPE_DATA                 2
-#define OGS_MEDIA_TYPE_APPLICATION          3
-#define OGS_MEDIA_TYPE_CONTROL              4
-#define OGS_MEDIA_TYPE_TEXT                 5
-#define OGS_MEDIA_TYPE_MESSAGE              6
-#define OGS_MEDIA_TYPE_OTHER                0xFFFFFFFF
     uint32_t            media_type;
 
     uint64_t            max_requested_bandwidth_dl;
@@ -659,6 +642,8 @@ typedef struct ogs_media_component_s {
     uint64_t            min_requested_bandwidth_ul;
     uint64_t            rr_bandwidth;
     uint64_t            rs_bandwidth;
+
+    int                 flow_status;
 
 #define OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT     8
     ogs_media_sub_component_t sub[OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT];
