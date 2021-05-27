@@ -192,6 +192,9 @@ void pcf_ue_remove(pcf_ue_t *pcf_ue)
 
     if (pcf_ue->notification_uri)
         ogs_free(pcf_ue->notification_uri);
+    if (pcf_ue->namf.client)
+        ogs_sbi_client_remove(pcf_ue->namf.client);
+
     if (pcf_ue->gpsi)
         ogs_free(pcf_ue->gpsi);
     if (pcf_ue->pei)
@@ -298,6 +301,8 @@ void pcf_sess_remove(pcf_sess_t *sess)
 
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
+    if (sess->nsmf.client)
+        ogs_sbi_client_remove(sess->nsmf.client);
 
     clear_ipv4addr(sess);
     clear_ipv6prefix(sess);

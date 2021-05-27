@@ -29,6 +29,9 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
 
     uint64_t supported_features = 0;
 
+    ogs_sbi_client_t *client = NULL;
+    ogs_sockaddr_t *addr = NULL;
+
     ogs_assert(pcf_ue);
     ogs_assert(stream);
     ogs_assert(message);
@@ -62,10 +65,28 @@ bool pcf_npcf_am_policy_contrtol_handle_create(pcf_ue_t *pcf_ue,
         return false;
     }
 
+    addr = ogs_sbi_getaddr_from_uri(PolicyAssociationRequest->notification_uri);
+    if (!addr) {
+        ogs_error("[%s] Invalid URI [%s]",
+                pcf_ue->supi, PolicyAssociationRequest->notification_uri);
+        ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                message, "[%s] Invalid URI", pcf_ue->supi);
+        return false;
+    }
+
     if (pcf_ue->notification_uri)
         ogs_free(pcf_ue->notification_uri);
     pcf_ue->notification_uri = ogs_strdup(
             PolicyAssociationRequest->notification_uri);
+
+    client = ogs_sbi_client_find(addr);
+    if (!client) {
+        client = ogs_sbi_client_add(addr);
+        ogs_assert(client);
+    }
+    OGS_SETUP_SBI_CLIENT(&pcf_ue->namf, client);
+
+    ogs_freeaddrinfo(addr);
 
     supported_features =
         ogs_uint64_from_string(PolicyAssociationRequest->supp_feat);
@@ -116,6 +137,9 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
     OpenAPI_snssai_t *sliceInfo = NULL;
 
     uint64_t supported_features = 0;
+
+    ogs_sbi_client_t *client = NULL;
+    ogs_sockaddr_t *addr = NULL;
 
     ogs_assert(sess);
     pcf_ue = sess->pcf_ue;
@@ -189,6 +213,14 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
         goto cleanup;
     }
 
+    addr = ogs_sbi_getaddr_from_uri(SmPolicyContextData->notification_uri);
+    if (!addr) {
+        strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
+                pcf_ue->supi, sess->psi, SmPolicyContextData->notification_uri);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        goto cleanup;
+    }
+
     if (SmPolicyContextData->supp_feat) {
         supported_features =
             ogs_uint64_from_string(SmPolicyContextData->supp_feat);
@@ -206,6 +238,15 @@ bool pcf_npcf_smpolicycontrtol_handle_create(pcf_sess_t *sess,
     if (sess->notification_uri)
         ogs_free(sess->notification_uri);
     sess->notification_uri = ogs_strdup(SmPolicyContextData->notification_uri);
+
+    client = ogs_sbi_client_find(addr);
+    if (!client) {
+        client = ogs_sbi_client_add(addr);
+        ogs_assert(client);
+    }
+    OGS_SETUP_SBI_CLIENT(&sess->nsmf, client);
+
+    ogs_freeaddrinfo(addr);
 
     if (SmPolicyContextData->ipv4_address)
         ogs_assert(true ==
@@ -435,6 +476,11 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     ogs_sbi_server_send_response(stream, response);
 
     ogs_free(sendmsg.http.location);
+
+#if 0
+    pcf_sbi_send_smpolicycontrol_notify(sess);
+    pcf_sbi_send_am_policy_control_notify(pcf_ue);
+#endif
 
     ogs_ims_data_free(&ims_data);
 

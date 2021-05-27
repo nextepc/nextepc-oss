@@ -73,6 +73,10 @@ struct pcf_ue_s {
     char *supi;
 
     char *notification_uri;
+    struct {
+        ogs_sbi_client_t *client;
+    } namf;
+
     char *gpsi;
     OpenAPI_access_type_e access_type;
     char *pei;
@@ -103,7 +107,11 @@ struct pcf_sess_s {
 
     uint8_t pdu_session_type;
     char *dnn;
+
     char *notification_uri;
+    struct {
+        ogs_sbi_client_t *client;
+    } nsmf;
 
     char *ipv4addr_string;
     char *ipv6prefix_string;

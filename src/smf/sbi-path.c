@@ -205,20 +205,6 @@ void smf_namf_comm_send_n1_n2_message_transfer(
             (ogs_fsm_handler_t)smf_nf_state_registered, client_cb);
 }
 
-void smf_sbi_send_response(ogs_sbi_stream_t *stream, int status)
-{
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
-    ogs_assert(stream);
-
-    memset(&sendmsg, 0, sizeof(sendmsg));
-
-    response = ogs_sbi_build_response(&sendmsg, status);
-    ogs_assert(response);
-    ogs_sbi_server_send_response(stream, response);
-}
-
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_stream_t *stream,
         int status, const char *title, const char *detail,

@@ -32,6 +32,9 @@ libpcf_sources = files('''
     nbsf-build.c
     nbsf-handler.c
 
+    namf-build.c
+    nsmf-build.c
+
     am-sm.c
     sm-sm.c
 

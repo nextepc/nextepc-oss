@@ -273,7 +273,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_MODIFICATION_COMPLETE:
-            smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_sbi_send_http_status_no_content(stream);
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
@@ -295,14 +295,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-            smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_sbi_send_http_status_no_content(stream);
 
             /*
              * Race condition for PDU session release complete
              *  - CLIENT : /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
              *  - SERVER : /namf-callback/v1/{supi}/sm-context-status/{psi})
              *
-             * smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+             * ogs_sbi_send_http_status_no_content(stream);
              * smf_sbi_send_sm_context_status_notify(sess);
              *
              * When executed as above,
@@ -365,12 +365,12 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             sess->ngap_state.pdu_session_resource_release = SMF_NGAP_STATE_NONE;
 
             if (ngap_state == SMF_NGAP_STATE_DELETE_TRIGGER_UE_REQUESTED) {
-                smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+                ogs_sbi_send_http_status_no_content(stream);
             } else if (ngap_state ==
                     SMF_NGAP_STATE_ERROR_INDICATION_RECEIVED_FROM_5G_AN) {
                 smf_n1_n2_message_transfer_param_t param;
 
-                smf_sbi_send_response(stream, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+                ogs_sbi_send_http_status_no_content(stream);
 
                 memset(&param, 0, sizeof(param));
                 param.state = SMF_NETWORK_TRIGGERED_SERVICE_REQUEST;

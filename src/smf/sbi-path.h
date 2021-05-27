@@ -45,10 +45,6 @@ void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
 void smf_namf_comm_send_n1_n2_message_transfer(
         smf_sess_t *sess, smf_n1_n2_message_transfer_param_t *param);
 
-#define smf_sbi_send_http_status_no_content(__sTREAM) \
-        smf_sbi_send_response(__sTREAM, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-void smf_sbi_send_response(ogs_sbi_stream_t *stream, int status);
-
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_stream_t *stream,
         int status, const char *title, const char *detail,
