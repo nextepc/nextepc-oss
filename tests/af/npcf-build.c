@@ -40,6 +40,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     OpenAPI_media_sub_component_t *SubComponent = NULL;
 
     OpenAPI_list_t *fDescList = NULL;
+    OpenAPI_list_t *codecList = NULL;
 
     int i, j;
     OpenAPI_lnode_t *node = NULL, *node2 = NULL, *node3 = NULL;
@@ -93,6 +94,9 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     AscReqData.supi = sess->supi;
     AscReqData.gpsi = sess->gpsi;
 
+    AscReqData.af_app_id = (char *)"IMS Services";
+    AscReqData.res_prio = OpenAPI_reserv_priority_PRIO_1;
+
     /* Media Component */
     i = 0, j = 0;
 
@@ -103,6 +107,33 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(MediaComponent);
 
     MediaComponent->med_comp_n = (++i);
+    MediaComponent->f_status = OpenAPI_flow_status_ENABLED;
+    MediaComponent->mar_bw_dl = ogs_sbi_bitrate_to_string(
+                                    41000, OGS_SBI_BITRATE_KBPS);
+    MediaComponent->mar_bw_ul = ogs_sbi_bitrate_to_string(
+                                    41000, OGS_SBI_BITRATE_KBPS);
+    MediaComponent->med_type = OpenAPI_media_type_AUDIO;
+    MediaComponent->rr_bw = ogs_sbi_bitrate_to_string(
+                                    2000, OGS_SBI_BITRATE_BPS);
+    MediaComponent->rs_bw = ogs_sbi_bitrate_to_string(
+                                    600, OGS_SBI_BITRATE_BPS);
+
+    /* Codec */
+    codecList = OpenAPI_list_create();
+    ogs_assert(codecList);
+    OpenAPI_list_add(codecList,
+        ogs_strdup("downlink\noffer\n"
+            "m=audio 49000 RTP/AVP 116 99 97 105 100\r\nb=AS:41\r\n"
+            "b=RS:512\r\nb=RR:1537\r\na=maxptime:240\r\n"
+            "a=des:qos mandatory local sendrecv\r\na=curr:qos local none\r\n"
+            "a=des:qos option"));
+    OpenAPI_list_add(codecList,
+        ogs_strdup("uplink\nanswer\nm=audio 50020 RTP/AVP 99 105\r\n"
+            "b=AS:41\r\nb=RS:600\r\nb=RR:2000\r\na=rtpmap:99 AMR-WB/16000/1\r\n"
+            "a=fmtp:99 mode-change-capability=2;max-red=0\r\n"
+            "a=rtpmap:105 telephone-event/16"));
+    ogs_assert(codecList->count);
+    MediaComponent->codecs = codecList;
 
     MediaComponentMap = OpenAPI_map_create(
             ogs_msprintf("%d", MediaComponent->med_comp_n), MediaComponent);
@@ -113,6 +144,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(MediaComponentList->count);
     AscReqData.med_components = MediaComponentList;
 
+    /* Sub Component */
     SubComponentList = OpenAPI_list_create();
     ogs_assert(SubComponentList);
 
@@ -121,6 +153,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(SubComponent);
 
     SubComponent->f_num = (++j);
+    SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
 
     SubComponentMap = OpenAPI_map_create(
             ogs_msprintf("%d", SubComponent->f_num), SubComponent);
@@ -131,12 +164,10 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     /* Flow Description */
     fDescList = OpenAPI_list_create();
     ogs_assert(fDescList);
-
     OpenAPI_list_add(fDescList,
-        ogs_msprintf("permit out 17 from 172.20.166.84 to 10.45.0.2 20001"));
+        ogs_strdup("permit out 17 from 172.20.166.84 to 10.45.0.2 20001"));
     OpenAPI_list_add(fDescList,
-        ogs_msprintf("permit in 17 from 10.45.0.2 to 172.20.166.84 20360"));
-
+        ogs_strdup("permit in 17 from 10.45.0.2 to 172.20.166.84 20360"));
     ogs_assert(fDescList->count);
     SubComponent->f_descs = fDescList;
 
@@ -145,6 +176,7 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(SubComponent);
 
     SubComponent->f_num = (++j);
+    SubComponent->flow_usage = OpenAPI_flow_usage_NO_INFO;
 
     SubComponentMap = OpenAPI_map_create(
             ogs_msprintf("%d", SubComponent->f_num), SubComponent);
@@ -155,12 +187,10 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     /* Flow Description */
     fDescList = OpenAPI_list_create();
     ogs_assert(fDescList);
-
     OpenAPI_list_add(fDescList,
-        ogs_msprintf("permit out 17 from 172.20.166.84 to 10.45.0.2 20002"));
+        ogs_strdup("permit out 17 from 172.20.166.84 to 10.45.0.2 20002"));
     OpenAPI_list_add(fDescList,
-        ogs_msprintf("permit in 17 from 10.45.0.2 to 172.20.166.84 20361"));
-
+        ogs_strdup("permit in 17 from 10.45.0.2 to 172.20.166.84 20361"));
     ogs_assert(fDescList->count);
     SubComponent->f_descs = fDescList;
 
@@ -183,6 +213,21 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
         if (MediaComponentMap) {
             MediaComponent = MediaComponentMap->value;
             if (MediaComponent) {
+
+                if (MediaComponent->mar_bw_dl)
+                    ogs_free(MediaComponent->mar_bw_dl);
+                if (MediaComponent->mar_bw_ul)
+                    ogs_free(MediaComponent->mar_bw_ul);
+                if (MediaComponent->rr_bw)
+                    ogs_free(MediaComponent->rr_bw);
+                if (MediaComponent->rs_bw)
+                    ogs_free(MediaComponent->rs_bw);
+
+                codecList = MediaComponent->codecs;
+                OpenAPI_list_for_each(codecList, node2) {
+                    if (node2->data) ogs_free(node2->data);
+                }
+                OpenAPI_list_free(codecList);
 
                 SubComponentList = MediaComponent->med_sub_comps;
                 OpenAPI_list_for_each(SubComponentList, node2) {
