@@ -67,6 +67,7 @@ typedef struct ogs_app_context_s {
         int no_bsf;
         int no_udr;
         int no_nrf;
+        int no_sepp;
 
         /* Network */
         int no_ipv4;

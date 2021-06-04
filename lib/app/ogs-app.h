@@ -93,6 +93,9 @@ void smf_terminate(void);
 int amf_initialize(void);
 void amf_terminate(void);
 
+int sepp_initialize(void);
+void sepp_terminate(void);
+
 #ifdef __cplusplus
 }
 #endif

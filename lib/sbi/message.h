@@ -149,6 +149,7 @@ extern "C" {
                                                     "network-slice-information"
 
 #define OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT        "nbsf-management"
+#define OGS_SBI_SERVICE_NAME_NSEPP_MANAGEMENT       "nsepp-management"
 #define OGS_SBI_RESOURCE_NAME_PCF_BINDINGS          "pcfBindings"
 
 #define OGS_SBI_FEATURES_IS_SET(__fEATURES, __n) \
