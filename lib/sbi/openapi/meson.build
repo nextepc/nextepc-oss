@@ -836,6 +836,72 @@ libsbi_openapi_sources = files('''
     model/tsn_qos_container_rm.c
     model/ue_identity_info.c
     model/usage_threshold_rm.c
+    model/api_ie_mapping.c
+    model/api_ie_mapping.h
+    model/api_signature.c
+    model/api_signature.h
+    model/callback_name.c
+    model/callback_name.h
+    model/failed_modification_info.c
+    model/failed_modification_info.h
+    model/failure_reason.c
+    model/failure_reason.h
+    model/http_method.c
+    model/http_method.h
+    model/ie_info.c
+    model/ie_info.h
+    model/ie_location.c
+    model/ie_location.h
+    model/ie_type.c
+    model/ie_type.h
+    model/ipx_provider_sec_info.c
+    model/ipx_provider_sec_info.h
+    model/n32f_context_info.c
+    model/n32f_context_info.h
+    model/n32f_error_detail.c
+    model/n32f_error_detail.h
+    model/n32f_error_info.c
+    model/n32f_error_info.h
+    model/n32f_error_type.c
+    model/n32f_error_type.h
+    model/protection_policy.c
+    model/protection_policy.h
+    model/sec_negotiate_req_data.c
+    model/sec_negotiate_req_data.h
+    model/sec_negotiate_rsp_data.c
+    model/sec_negotiate_rsp_data.h
+    model/sec_param_exch_req_data.c
+    model/sec_param_exch_req_data.h
+    model/sec_param_exch_rsp_data.c
+    model/sec_param_exch_rsp_data.h
+    model/security_capability.c
+    model/security_capability.h
+    model/data_to_integrity_protect_block.c
+    model/data_to_integrity_protect_block.h
+    model/encoded_http_header_value.c
+    model/encoded_http_header_value.h
+    model/flat_jwe_json.c
+    model/flat_jwe_json.h
+    model/flat_jws_json.c
+    model/flat_jws_json.h
+    model/http_header.c
+    model/http_header.h
+    model/http_payload.c
+    model/http_payload.h
+    model/index_to_encrypted_value.c
+    model/index_to_encrypted_value.h
+    model/meta_data.c
+    model/meta_data.h
+    model/modifications.c
+    model/modifications.h
+    model/n32f_reformatted_req_msg.c
+    model/n32f_reformatted_req_msg.h
+    model/n32f_reformatted_rsp_msg.c
+    model/n32f_reformatted_rsp_msg.h
+    model/request_line.c
+    model/request_line.h
+    model/telescopic_mapping.c
+    model/telescopic_mapping.h
 '''.split())
 
 libsbi_openapi_inc = include_directories('.')
