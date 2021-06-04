@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "http_method.h"
 
-OpenAPI_http_method_t *OpenAPI_http_method_create(
-    )
+char* OpenAPI_http_method_ToString(OpenAPI_http_method_e http_method)
 {
-    OpenAPI_http_method_t *http_method_local_var = OpenAPI_malloc(sizeof(OpenAPI_http_method_t));
-    if (!http_method_local_var) {
-        return NULL;
-    }
-
-    return http_method_local_var;
+    const char *http_methodArray[] =  { "NULL", "GET", "PUT", "POST", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE" };
+    size_t sizeofArray = sizeof(http_methodArray) / sizeof(http_methodArray[0]);
+    if (http_method < sizeofArray)
+        return (char *)http_methodArray[http_method];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_http_method_free(OpenAPI_http_method_t *http_method)
+OpenAPI_http_method_e OpenAPI_http_method_FromString(char* http_method)
 {
-    if (NULL == http_method) {
-        return;
+    int stringToReturn = 0;
+    const char *http_methodArray[] =  { "NULL", "GET", "PUT", "POST", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT", "TRACE" };
+    size_t sizeofArray = sizeof(http_methodArray) / sizeof(http_methodArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(http_method, http_methodArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(http_method);
-}
-
-cJSON *OpenAPI_http_method_convertToJSON(OpenAPI_http_method_t *http_method)
-{
-    cJSON *item = NULL;
-
-    if (http_method == NULL) {
-        ogs_error("OpenAPI_http_method_convertToJSON() failed [HttpMethod]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_http_method_t *OpenAPI_http_method_parseFromJSON(cJSON *http_methodJSON)
-{
-    OpenAPI_http_method_t *http_method_local_var = NULL;
-    http_method_local_var = OpenAPI_http_method_create (
-        );
-
-    return http_method_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_http_method_t *OpenAPI_http_method_copy(OpenAPI_http_method_t *dst, OpenAPI_http_method_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_http_method_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_http_method_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_http_method_free(dst);
-    dst = OpenAPI_http_method_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

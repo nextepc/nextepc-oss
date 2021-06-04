@@ -23,13 +23,13 @@ extern "C" {
 typedef struct OpenAPI_api_ie_mapping_s OpenAPI_api_ie_mapping_t;
 typedef struct OpenAPI_api_ie_mapping_s {
     struct OpenAPI_api_signature_s *api_signature;
-    struct OpenAPI_http_method_s *api_method;
+    OpenAPI_http_method_e api_method;
     OpenAPI_list_t *ie_list;
 } OpenAPI_api_ie_mapping_t;
 
 OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_create(
     OpenAPI_api_signature_t *api_signature,
-    OpenAPI_http_method_t *api_method,
+    OpenAPI_http_method_e api_method,
     OpenAPI_list_t *ie_list
     );
 void OpenAPI_api_ie_mapping_free(OpenAPI_api_ie_mapping_t *api_ie_mapping);

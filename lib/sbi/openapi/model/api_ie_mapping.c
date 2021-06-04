@@ -6,7 +6,7 @@
 
 OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_create(
     OpenAPI_api_signature_t *api_signature,
-    OpenAPI_http_method_t *api_method,
+    OpenAPI_http_method_e api_method,
     OpenAPI_list_t *ie_list
     )
 {
@@ -28,7 +28,6 @@ void OpenAPI_api_ie_mapping_free(OpenAPI_api_ie_mapping_t *api_ie_mapping)
     }
     OpenAPI_lnode_t *node;
     OpenAPI_api_signature_free(api_ie_mapping->api_signature);
-    OpenAPI_http_method_free(api_ie_mapping->api_method);
     OpenAPI_list_for_each(api_ie_mapping->ie_list, node) {
         OpenAPI_ie_info_free(node->data);
     }
@@ -57,13 +56,7 @@ cJSON *OpenAPI_api_ie_mapping_convertToJSON(OpenAPI_api_ie_mapping_t *api_ie_map
         goto end;
     }
 
-    cJSON *api_method_local_JSON = OpenAPI_http_method_convertToJSON(api_ie_mapping->api_method);
-    if (api_method_local_JSON == NULL) {
-        ogs_error("OpenAPI_api_ie_mapping_convertToJSON() failed [api_method]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "apiMethod", api_method_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "apiMethod", OpenAPI_http_method_ToString(api_ie_mapping->api_method)) == NULL) {
         ogs_error("OpenAPI_api_ie_mapping_convertToJSON() failed [api_method]");
         goto end;
     }
@@ -109,9 +102,13 @@ OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_parseFromJSON(cJSON *api_ie_map
         goto end;
     }
 
-    OpenAPI_http_method_t *api_method_local_nonprim = NULL;
+    OpenAPI_http_method_e api_methodVariable;
 
-    api_method_local_nonprim = OpenAPI_http_method_parseFromJSON(api_method);
+    if (!cJSON_IsString(api_method)) {
+        ogs_error("OpenAPI_api_ie_mapping_parseFromJSON() failed [api_method]");
+        goto end;
+    }
+    api_methodVariable = OpenAPI_http_method_FromString(api_method->valuestring);
 
     cJSON *ie_list = cJSON_GetObjectItemCaseSensitive(api_ie_mappingJSON, "IeList");
     if (!ie_list) {
@@ -141,7 +138,7 @@ OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_parseFromJSON(cJSON *api_ie_map
 
     api_ie_mapping_local_var = OpenAPI_api_ie_mapping_create (
         api_signature_local_nonprim,
-        api_method_local_nonprim,
+        api_methodVariable,
         ie_listList
         );
 

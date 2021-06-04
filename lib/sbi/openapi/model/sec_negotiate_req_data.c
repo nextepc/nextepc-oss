@@ -30,9 +30,6 @@ void OpenAPI_sec_negotiate_req_data_free(OpenAPI_sec_negotiate_req_data_t *sec_n
     }
     OpenAPI_lnode_t *node;
     ogs_free(sec_negotiate_req_data->sender);
-    OpenAPI_list_for_each(sec_negotiate_req_data->supported_sec_capability_list, node) {
-        OpenAPI_security_capability_free(node->data);
-    }
     OpenAPI_list_free(sec_negotiate_req_data->supported_sec_capability_list);
     OpenAPI_list_for_each(sec_negotiate_req_data->plmn_id_list, node) {
         OpenAPI_plmn_id_free(node->data);
@@ -56,21 +53,16 @@ cJSON *OpenAPI_sec_negotiate_req_data_convertToJSON(OpenAPI_sec_negotiate_req_da
         goto end;
     }
 
-    cJSON *supported_sec_capability_listList = cJSON_AddArrayToObject(item, "supportedSecCapabilityList");
-    if (supported_sec_capability_listList == NULL) {
+    cJSON *supported_sec_capability_list = cJSON_AddArrayToObject(item, "supportedSecCapabilityList");
+    if (supported_sec_capability_list == NULL) {
         ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [supported_sec_capability_list]");
         goto end;
     }
-
     OpenAPI_lnode_t *supported_sec_capability_list_node;
-    if (sec_negotiate_req_data->supported_sec_capability_list) {
-        OpenAPI_list_for_each(sec_negotiate_req_data->supported_sec_capability_list, supported_sec_capability_list_node) {
-            cJSON *itemLocal = OpenAPI_security_capability_convertToJSON(supported_sec_capability_list_node->data);
-            if (itemLocal == NULL) {
-                ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [supported_sec_capability_list]");
-                goto end;
-            }
-            cJSON_AddItemToArray(supported_sec_capability_listList, itemLocal);
+    OpenAPI_list_for_each(sec_negotiate_req_data->supported_sec_capability_list, supported_sec_capability_list_node) {
+        if (cJSON_AddStringToObject(supported_sec_capability_list, "", OpenAPI_security_capability_ToString((intptr_t)supported_sec_capability_list_node->data)) == NULL) {
+            ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [supported_sec_capability_list]");
+            goto end;
         }
     }
 
@@ -137,13 +129,12 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
     supported_sec_capability_listList = OpenAPI_list_create();
 
     cJSON_ArrayForEach(supported_sec_capability_list_local_nonprimitive, supported_sec_capability_list ) {
-        if (!cJSON_IsObject(supported_sec_capability_list_local_nonprimitive)) {
+        if (!cJSON_IsString(supported_sec_capability_list_local_nonprimitive)) {
             ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [supported_sec_capability_list]");
             goto end;
         }
-        OpenAPI_security_capability_t *supported_sec_capability_listItem = OpenAPI_security_capability_parseFromJSON(supported_sec_capability_list_local_nonprimitive);
 
-        OpenAPI_list_add(supported_sec_capability_listList, supported_sec_capability_listItem);
+        OpenAPI_list_add(supported_sec_capability_listList, (void *)OpenAPI_security_capability_FromString(supported_sec_capability_list_local_nonprimitive->valuestring));
     }
 
     cJSON *_3_gpp_sbi_target_api_root_supported = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "3GppSbiTargetApiRootSupported");

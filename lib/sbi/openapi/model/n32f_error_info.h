@@ -23,14 +23,14 @@ extern "C" {
 typedef struct OpenAPI_n32f_error_info_s OpenAPI_n32f_error_info_t;
 typedef struct OpenAPI_n32f_error_info_s {
     char *n32f_message_id;
-    struct OpenAPI_n32f_error_type_s *n32f_error_type;
+    OpenAPI_n32f_error_type_e n32f_error_type;
     OpenAPI_list_t *failed_modification_list;
     OpenAPI_list_t *error_details_list;
 } OpenAPI_n32f_error_info_t;
 
 OpenAPI_n32f_error_info_t *OpenAPI_n32f_error_info_create(
     char *n32f_message_id,
-    OpenAPI_n32f_error_type_t *n32f_error_type,
+    OpenAPI_n32f_error_type_e n32f_error_type,
     OpenAPI_list_t *failed_modification_list,
     OpenAPI_list_t *error_details_list
     );

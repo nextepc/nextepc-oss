@@ -22,14 +22,14 @@ extern "C" {
 typedef struct OpenAPI_sec_negotiate_rsp_data_s OpenAPI_sec_negotiate_rsp_data_t;
 typedef struct OpenAPI_sec_negotiate_rsp_data_s {
     char *sender;
-    struct OpenAPI_security_capability_s *selected_sec_capability;
+    OpenAPI_security_capability_e selected_sec_capability;
     int _3_gpp_sbi_target_api_root_supported;
     OpenAPI_list_t *plmn_id_list;
 } OpenAPI_sec_negotiate_rsp_data_t;
 
 OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_create(
     char *sender,
-    OpenAPI_security_capability_t *selected_sec_capability,
+    OpenAPI_security_capability_e selected_sec_capability,
     int _3_gpp_sbi_target_api_root_supported,
     OpenAPI_list_t *plmn_id_list
     );

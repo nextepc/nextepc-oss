@@ -6,7 +6,7 @@
 
 OpenAPI_n32f_error_info_t *OpenAPI_n32f_error_info_create(
     char *n32f_message_id,
-    OpenAPI_n32f_error_type_t *n32f_error_type,
+    OpenAPI_n32f_error_type_e n32f_error_type,
     OpenAPI_list_t *failed_modification_list,
     OpenAPI_list_t *error_details_list
     )
@@ -30,7 +30,6 @@ void OpenAPI_n32f_error_info_free(OpenAPI_n32f_error_info_t *n32f_error_info)
     }
     OpenAPI_lnode_t *node;
     ogs_free(n32f_error_info->n32f_message_id);
-    OpenAPI_n32f_error_type_free(n32f_error_info->n32f_error_type);
     OpenAPI_list_for_each(n32f_error_info->failed_modification_list, node) {
         OpenAPI_failed_modification_info_free(node->data);
     }
@@ -57,13 +56,7 @@ cJSON *OpenAPI_n32f_error_info_convertToJSON(OpenAPI_n32f_error_info_t *n32f_err
         goto end;
     }
 
-    cJSON *n32f_error_type_local_JSON = OpenAPI_n32f_error_type_convertToJSON(n32f_error_info->n32f_error_type);
-    if (n32f_error_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_n32f_error_info_convertToJSON() failed [n32f_error_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "n32fErrorType", n32f_error_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "n32fErrorType", OpenAPI_n32f_error_type_ToString(n32f_error_info->n32f_error_type)) == NULL) {
         ogs_error("OpenAPI_n32f_error_info_convertToJSON() failed [n32f_error_type]");
         goto end;
     }
@@ -133,9 +126,13 @@ OpenAPI_n32f_error_info_t *OpenAPI_n32f_error_info_parseFromJSON(cJSON *n32f_err
         goto end;
     }
 
-    OpenAPI_n32f_error_type_t *n32f_error_type_local_nonprim = NULL;
+    OpenAPI_n32f_error_type_e n32f_error_typeVariable;
 
-    n32f_error_type_local_nonprim = OpenAPI_n32f_error_type_parseFromJSON(n32f_error_type);
+    if (!cJSON_IsString(n32f_error_type)) {
+        ogs_error("OpenAPI_n32f_error_info_parseFromJSON() failed [n32f_error_type]");
+        goto end;
+    }
+    n32f_error_typeVariable = OpenAPI_n32f_error_type_FromString(n32f_error_type->valuestring);
 
     cJSON *failed_modification_list = cJSON_GetObjectItemCaseSensitive(n32f_error_infoJSON, "failedModificationList");
 
@@ -185,7 +182,7 @@ OpenAPI_n32f_error_info_t *OpenAPI_n32f_error_info_parseFromJSON(cJSON *n32f_err
 
     n32f_error_info_local_var = OpenAPI_n32f_error_info_create (
         ogs_strdup(n32f_message_id->valuestring),
-        n32f_error_type_local_nonprim,
+        n32f_error_typeVariable,
         failed_modification_list ? failed_modification_listList : NULL,
         error_details_list ? error_details_listList : NULL
         );

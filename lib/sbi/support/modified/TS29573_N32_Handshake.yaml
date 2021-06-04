@@ -163,19 +163,19 @@ paths:
 components:
   schemas:
     SecurityCapability:
-      anyOf:
-        - type: string
+        #anyOf:
+        #- type: string
           enum:
             - TLS
             - PRINS
-        - type: string
+          type: string
     ApiSignature:
       oneOf:
         - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
         - $ref: '#/components/schemas/CallbackName'
     HttpMethod:
-      anyOf:
-        - type: string
+        #anyOf:
+        #- type: string
           enum:
             - GET
             - PUT
@@ -186,11 +186,11 @@ components:
             - OPTIONS
             - CONNECT
             - TRACE
-        - type: string    
+          type: string    
     
     IeType:
-      anyOf:
-        - type: string
+        #anyOf:
+        #- type: string
           enum:
             - UEID
             - LOCATION
@@ -199,17 +199,17 @@ components:
             - AUTHORIZATION_TOKEN
             - OTHER
             - NONSENSITIVE
-        - type: string
+          type: string
     
     IeLocation:
-      anyOf:
-        - type: string
+        #anyOf:
+        #- type: string
           enum:
             - URI_PARAM
             - HEADER
             - BODY
             - MULTIPART_BINARY
-        - type: string
+          type: string
     
     IeInfo:
       type: object
@@ -430,8 +430,8 @@ components:
             type: string
           minItems: 1
     N32fErrorType:
-      anyOf:
-        - type: string
+        #anyOf:
+        #- type: string
           enum:
             - INTEGRITY_CHECK_FAILED
             - INTEGRITY_CHECK_ON_MODIFICATIONS_FAILED
@@ -442,12 +442,12 @@ components:
             - INTEGRITY_KEY_EXPIRED
             - ENCRYPTION_KEY_EXPIRED
             - POLICY_MISMATCH
-        - type: string
+          type: string
     FailureReason:
-      anyOf:
-        - type: string
+        #anyOf:
+        #- type: string
           enum:
             - INVALID_JSON_POINTER
             - INVALID_INDEX_TO_ENCRYPTED_BLOCK
             - INVALID_HTTP_HEADER
-        - type: string
+          type: string

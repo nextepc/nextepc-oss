@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ie_location_s OpenAPI_ie_location_t;
-typedef struct OpenAPI_ie_location_s {
-} OpenAPI_ie_location_t;
+typedef enum { OpenAPI_ie_location_NULL = 0, OpenAPI_ie_location_URI_PARAM, OpenAPI_ie_location_HEADER, OpenAPI_ie_location_BODY, OpenAPI_ie_location_MULTIPART_BINARY } OpenAPI_ie_location_e;
 
-OpenAPI_ie_location_t *OpenAPI_ie_location_create(
-    );
-void OpenAPI_ie_location_free(OpenAPI_ie_location_t *ie_location);
-OpenAPI_ie_location_t *OpenAPI_ie_location_parseFromJSON(cJSON *ie_locationJSON);
-cJSON *OpenAPI_ie_location_convertToJSON(OpenAPI_ie_location_t *ie_location);
-OpenAPI_ie_location_t *OpenAPI_ie_location_copy(OpenAPI_ie_location_t *dst, OpenAPI_ie_location_t *src);
+char* OpenAPI_ie_location_ToString(OpenAPI_ie_location_e ie_location);
+
+OpenAPI_ie_location_e OpenAPI_ie_location_FromString(char* ie_location);
 
 #ifdef __cplusplus
 }

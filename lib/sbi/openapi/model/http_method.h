@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_http_method_s OpenAPI_http_method_t;
-typedef struct OpenAPI_http_method_s {
-} OpenAPI_http_method_t;
+typedef enum { OpenAPI_http_method_NULL = 0, OpenAPI_http_method_GET, OpenAPI_http_method_PUT, OpenAPI_http_method_POST, OpenAPI_http_method_DELETE, OpenAPI_http_method_PATCH, OpenAPI_http_method_HEAD, OpenAPI_http_method_OPTIONS, OpenAPI_http_method_CONNECT, OpenAPI_http_method_TRACE } OpenAPI_http_method_e;
 
-OpenAPI_http_method_t *OpenAPI_http_method_create(
-    );
-void OpenAPI_http_method_free(OpenAPI_http_method_t *http_method);
-OpenAPI_http_method_t *OpenAPI_http_method_parseFromJSON(cJSON *http_methodJSON);
-cJSON *OpenAPI_http_method_convertToJSON(OpenAPI_http_method_t *http_method);
-OpenAPI_http_method_t *OpenAPI_http_method_copy(OpenAPI_http_method_t *dst, OpenAPI_http_method_t *src);
+char* OpenAPI_http_method_ToString(OpenAPI_http_method_e http_method);
+
+OpenAPI_http_method_e OpenAPI_http_method_FromString(char* http_method);
 
 #ifdef __cplusplus
 }

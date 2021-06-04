@@ -21,12 +21,12 @@ extern "C" {
 typedef struct OpenAPI_n32f_error_detail_s OpenAPI_n32f_error_detail_t;
 typedef struct OpenAPI_n32f_error_detail_s {
     char *attribute;
-    struct OpenAPI_failure_reason_s *msg_reconstruct_fail_reason;
+    OpenAPI_failure_reason_e msg_reconstruct_fail_reason;
 } OpenAPI_n32f_error_detail_t;
 
 OpenAPI_n32f_error_detail_t *OpenAPI_n32f_error_detail_create(
     char *attribute,
-    OpenAPI_failure_reason_t *msg_reconstruct_fail_reason
+    OpenAPI_failure_reason_e msg_reconstruct_fail_reason
     );
 void OpenAPI_n32f_error_detail_free(OpenAPI_n32f_error_detail_t *n32f_error_detail);
 OpenAPI_n32f_error_detail_t *OpenAPI_n32f_error_detail_parseFromJSON(cJSON *n32f_error_detailJSON);

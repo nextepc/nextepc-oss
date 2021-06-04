@@ -6,7 +6,7 @@
 
 OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_create(
     char *sender,
-    OpenAPI_security_capability_t *selected_sec_capability,
+    OpenAPI_security_capability_e selected_sec_capability,
     int _3_gpp_sbi_target_api_root_supported,
     OpenAPI_list_t *plmn_id_list
     )
@@ -30,7 +30,6 @@ void OpenAPI_sec_negotiate_rsp_data_free(OpenAPI_sec_negotiate_rsp_data_t *sec_n
     }
     OpenAPI_lnode_t *node;
     ogs_free(sec_negotiate_rsp_data->sender);
-    OpenAPI_security_capability_free(sec_negotiate_rsp_data->selected_sec_capability);
     OpenAPI_list_for_each(sec_negotiate_rsp_data->plmn_id_list, node) {
         OpenAPI_plmn_id_free(node->data);
     }
@@ -53,13 +52,7 @@ cJSON *OpenAPI_sec_negotiate_rsp_data_convertToJSON(OpenAPI_sec_negotiate_rsp_da
         goto end;
     }
 
-    cJSON *selected_sec_capability_local_JSON = OpenAPI_security_capability_convertToJSON(sec_negotiate_rsp_data->selected_sec_capability);
-    if (selected_sec_capability_local_JSON == NULL) {
-        ogs_error("OpenAPI_sec_negotiate_rsp_data_convertToJSON() failed [selected_sec_capability]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "selectedSecCapability", selected_sec_capability_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "selectedSecCapability", OpenAPI_security_capability_ToString(sec_negotiate_rsp_data->selected_sec_capability)) == NULL) {
         ogs_error("OpenAPI_sec_negotiate_rsp_data_convertToJSON() failed [selected_sec_capability]");
         goto end;
     }
@@ -116,9 +109,13 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
         goto end;
     }
 
-    OpenAPI_security_capability_t *selected_sec_capability_local_nonprim = NULL;
+    OpenAPI_security_capability_e selected_sec_capabilityVariable;
 
-    selected_sec_capability_local_nonprim = OpenAPI_security_capability_parseFromJSON(selected_sec_capability);
+    if (!cJSON_IsString(selected_sec_capability)) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_parseFromJSON() failed [selected_sec_capability]");
+        goto end;
+    }
+    selected_sec_capabilityVariable = OpenAPI_security_capability_FromString(selected_sec_capability->valuestring);
 
     cJSON *_3_gpp_sbi_target_api_root_supported = cJSON_GetObjectItemCaseSensitive(sec_negotiate_rsp_dataJSON, "3GppSbiTargetApiRootSupported");
 
@@ -154,7 +151,7 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
 
     sec_negotiate_rsp_data_local_var = OpenAPI_sec_negotiate_rsp_data_create (
         ogs_strdup(sender->valuestring),
-        selected_sec_capability_local_nonprim,
+        selected_sec_capabilityVariable,
         _3_gpp_sbi_target_api_root_supported ? _3_gpp_sbi_target_api_root_supported->valueint : 0,
         plmn_id_list ? plmn_id_listList : NULL
         );

@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "failure_reason.h"
 
-OpenAPI_failure_reason_t *OpenAPI_failure_reason_create(
-    )
+char* OpenAPI_failure_reason_ToString(OpenAPI_failure_reason_e failure_reason)
 {
-    OpenAPI_failure_reason_t *failure_reason_local_var = OpenAPI_malloc(sizeof(OpenAPI_failure_reason_t));
-    if (!failure_reason_local_var) {
-        return NULL;
-    }
-
-    return failure_reason_local_var;
+    const char *failure_reasonArray[] =  { "NULL", "INVALID_JSON_POINTER", "INVALID_INDEX_TO_ENCRYPTED_BLOCK", "INVALID_HTTP_HEADER" };
+    size_t sizeofArray = sizeof(failure_reasonArray) / sizeof(failure_reasonArray[0]);
+    if (failure_reason < sizeofArray)
+        return (char *)failure_reasonArray[failure_reason];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_failure_reason_free(OpenAPI_failure_reason_t *failure_reason)
+OpenAPI_failure_reason_e OpenAPI_failure_reason_FromString(char* failure_reason)
 {
-    if (NULL == failure_reason) {
-        return;
+    int stringToReturn = 0;
+    const char *failure_reasonArray[] =  { "NULL", "INVALID_JSON_POINTER", "INVALID_INDEX_TO_ENCRYPTED_BLOCK", "INVALID_HTTP_HEADER" };
+    size_t sizeofArray = sizeof(failure_reasonArray) / sizeof(failure_reasonArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(failure_reason, failure_reasonArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(failure_reason);
-}
-
-cJSON *OpenAPI_failure_reason_convertToJSON(OpenAPI_failure_reason_t *failure_reason)
-{
-    cJSON *item = NULL;
-
-    if (failure_reason == NULL) {
-        ogs_error("OpenAPI_failure_reason_convertToJSON() failed [FailureReason]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_failure_reason_t *OpenAPI_failure_reason_parseFromJSON(cJSON *failure_reasonJSON)
-{
-    OpenAPI_failure_reason_t *failure_reason_local_var = NULL;
-    failure_reason_local_var = OpenAPI_failure_reason_create (
-        );
-
-    return failure_reason_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_failure_reason_t *OpenAPI_failure_reason_copy(OpenAPI_failure_reason_t *dst, OpenAPI_failure_reason_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_failure_reason_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_failure_reason_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_failure_reason_free(dst);
-    dst = OpenAPI_failure_reason_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ie_type_s OpenAPI_ie_type_t;
-typedef struct OpenAPI_ie_type_s {
-} OpenAPI_ie_type_t;
+typedef enum { OpenAPI_ie_type_NULL = 0, OpenAPI_ie_type_UEID, OpenAPI_ie_type_LOCATION, OpenAPI_ie_type_KEY_MATERIAL, OpenAPI_ie_type_AUTHENTICATION_MATERIAL, OpenAPI_ie_type_AUTHORIZATION_TOKEN, OpenAPI_ie_type_OTHER, OpenAPI_ie_type_NONSENSITIVE } OpenAPI_ie_type_e;
 
-OpenAPI_ie_type_t *OpenAPI_ie_type_create(
-    );
-void OpenAPI_ie_type_free(OpenAPI_ie_type_t *ie_type);
-OpenAPI_ie_type_t *OpenAPI_ie_type_parseFromJSON(cJSON *ie_typeJSON);
-cJSON *OpenAPI_ie_type_convertToJSON(OpenAPI_ie_type_t *ie_type);
-OpenAPI_ie_type_t *OpenAPI_ie_type_copy(OpenAPI_ie_type_t *dst, OpenAPI_ie_type_t *src);
+char* OpenAPI_ie_type_ToString(OpenAPI_ie_type_e ie_type);
+
+OpenAPI_ie_type_e OpenAPI_ie_type_FromString(char* ie_type);
 
 #ifdef __cplusplus
 }

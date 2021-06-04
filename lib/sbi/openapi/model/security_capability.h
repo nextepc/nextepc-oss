@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_security_capability_s OpenAPI_security_capability_t;
-typedef struct OpenAPI_security_capability_s {
-} OpenAPI_security_capability_t;
+typedef enum { OpenAPI_security_capability_NULL = 0, OpenAPI_security_capability_TLS, OpenAPI_security_capability_PRINS } OpenAPI_security_capability_e;
 
-OpenAPI_security_capability_t *OpenAPI_security_capability_create(
-    );
-void OpenAPI_security_capability_free(OpenAPI_security_capability_t *security_capability);
-OpenAPI_security_capability_t *OpenAPI_security_capability_parseFromJSON(cJSON *security_capabilityJSON);
-cJSON *OpenAPI_security_capability_convertToJSON(OpenAPI_security_capability_t *security_capability);
-OpenAPI_security_capability_t *OpenAPI_security_capability_copy(OpenAPI_security_capability_t *dst, OpenAPI_security_capability_t *src);
+char* OpenAPI_security_capability_ToString(OpenAPI_security_capability_e security_capability);
+
+OpenAPI_security_capability_e OpenAPI_security_capability_FromString(char* security_capability);
 
 #ifdef __cplusplus
 }

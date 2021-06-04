@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n32f_error_type_s OpenAPI_n32f_error_type_t;
-typedef struct OpenAPI_n32f_error_type_s {
-} OpenAPI_n32f_error_type_t;
+typedef enum { OpenAPI_n32f_error_type_NULL = 0, OpenAPI_n32f_error_type_INTEGRITY_CHECK_FAILED, OpenAPI_n32f_error_type_INTEGRITY_CHECK_ON_MODIFICATIONS_FAILED, OpenAPI_n32f_error_type_MODIFICATIONS_INSTRUCTIONS_FAILED, OpenAPI_n32f_error_type_DECIPHERING_FAILED, OpenAPI_n32f_error_type_MESSAGE_RECONSTRUCTION_FAILED, OpenAPI_n32f_error_type_CONTEXT_NOT_FOUND, OpenAPI_n32f_error_type_INTEGRITY_KEY_EXPIRED, OpenAPI_n32f_error_type_ENCRYPTION_KEY_EXPIRED, OpenAPI_n32f_error_type_POLICY_MISMATCH } OpenAPI_n32f_error_type_e;
 
-OpenAPI_n32f_error_type_t *OpenAPI_n32f_error_type_create(
-    );
-void OpenAPI_n32f_error_type_free(OpenAPI_n32f_error_type_t *n32f_error_type);
-OpenAPI_n32f_error_type_t *OpenAPI_n32f_error_type_parseFromJSON(cJSON *n32f_error_typeJSON);
-cJSON *OpenAPI_n32f_error_type_convertToJSON(OpenAPI_n32f_error_type_t *n32f_error_type);
-OpenAPI_n32f_error_type_t *OpenAPI_n32f_error_type_copy(OpenAPI_n32f_error_type_t *dst, OpenAPI_n32f_error_type_t *src);
+char* OpenAPI_n32f_error_type_ToString(OpenAPI_n32f_error_type_e n32f_error_type);
+
+OpenAPI_n32f_error_type_e OpenAPI_n32f_error_type_FromString(char* n32f_error_type);
 
 #ifdef __cplusplus
 }

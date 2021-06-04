@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_failure_reason_s OpenAPI_failure_reason_t;
-typedef struct OpenAPI_failure_reason_s {
-} OpenAPI_failure_reason_t;
+typedef enum { OpenAPI_failure_reason_NULL = 0, OpenAPI_failure_reason_INVALID_JSON_POINTER, OpenAPI_failure_reason_INVALID_INDEX_TO_ENCRYPTED_BLOCK, OpenAPI_failure_reason_INVALID_HTTP_HEADER } OpenAPI_failure_reason_e;
 
-OpenAPI_failure_reason_t *OpenAPI_failure_reason_create(
-    );
-void OpenAPI_failure_reason_free(OpenAPI_failure_reason_t *failure_reason);
-OpenAPI_failure_reason_t *OpenAPI_failure_reason_parseFromJSON(cJSON *failure_reasonJSON);
-cJSON *OpenAPI_failure_reason_convertToJSON(OpenAPI_failure_reason_t *failure_reason);
-OpenAPI_failure_reason_t *OpenAPI_failure_reason_copy(OpenAPI_failure_reason_t *dst, OpenAPI_failure_reason_t *src);
+char* OpenAPI_failure_reason_ToString(OpenAPI_failure_reason_e failure_reason);
+
+OpenAPI_failure_reason_e OpenAPI_failure_reason_FromString(char* failure_reason);
 
 #ifdef __cplusplus
 }

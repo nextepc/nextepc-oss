@@ -21,8 +21,8 @@ extern "C" {
 
 typedef struct OpenAPI_ie_info_s OpenAPI_ie_info_t;
 typedef struct OpenAPI_ie_info_s {
-    struct OpenAPI_ie_location_s *ie_loc;
-    struct OpenAPI_ie_type_s *ie_type;
+    OpenAPI_ie_location_e ie_loc;
+    OpenAPI_ie_type_e ie_type;
     char *req_ie;
     char *rsp_ie;
     int is_modifiable;
@@ -30,8 +30,8 @@ typedef struct OpenAPI_ie_info_s {
 } OpenAPI_ie_info_t;
 
 OpenAPI_ie_info_t *OpenAPI_ie_info_create(
-    OpenAPI_ie_location_t *ie_loc,
-    OpenAPI_ie_type_t *ie_type,
+    OpenAPI_ie_location_e ie_loc,
+    OpenAPI_ie_type_e ie_type,
     char *req_ie,
     char *rsp_ie,
     int is_modifiable,

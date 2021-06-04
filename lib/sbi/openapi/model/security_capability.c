@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "security_capability.h"
 
-OpenAPI_security_capability_t *OpenAPI_security_capability_create(
-    )
+char* OpenAPI_security_capability_ToString(OpenAPI_security_capability_e security_capability)
 {
-    OpenAPI_security_capability_t *security_capability_local_var = OpenAPI_malloc(sizeof(OpenAPI_security_capability_t));
-    if (!security_capability_local_var) {
-        return NULL;
-    }
-
-    return security_capability_local_var;
+    const char *security_capabilityArray[] =  { "NULL", "TLS", "PRINS" };
+    size_t sizeofArray = sizeof(security_capabilityArray) / sizeof(security_capabilityArray[0]);
+    if (security_capability < sizeofArray)
+        return (char *)security_capabilityArray[security_capability];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_security_capability_free(OpenAPI_security_capability_t *security_capability)
+OpenAPI_security_capability_e OpenAPI_security_capability_FromString(char* security_capability)
 {
-    if (NULL == security_capability) {
-        return;
+    int stringToReturn = 0;
+    const char *security_capabilityArray[] =  { "NULL", "TLS", "PRINS" };
+    size_t sizeofArray = sizeof(security_capabilityArray) / sizeof(security_capabilityArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(security_capability, security_capabilityArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(security_capability);
-}
-
-cJSON *OpenAPI_security_capability_convertToJSON(OpenAPI_security_capability_t *security_capability)
-{
-    cJSON *item = NULL;
-
-    if (security_capability == NULL) {
-        ogs_error("OpenAPI_security_capability_convertToJSON() failed [SecurityCapability]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_security_capability_t *OpenAPI_security_capability_parseFromJSON(cJSON *security_capabilityJSON)
-{
-    OpenAPI_security_capability_t *security_capability_local_var = NULL;
-    security_capability_local_var = OpenAPI_security_capability_create (
-        );
-
-    return security_capability_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_security_capability_t *OpenAPI_security_capability_copy(OpenAPI_security_capability_t *dst, OpenAPI_security_capability_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_security_capability_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_security_capability_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_security_capability_free(dst);
-    dst = OpenAPI_security_capability_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

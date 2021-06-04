@@ -6,7 +6,7 @@
 
 OpenAPI_failed_modification_info_t *OpenAPI_failed_modification_info_create(
     char *ipx_id,
-    OpenAPI_n32f_error_type_t *n32f_error_type
+    OpenAPI_n32f_error_type_e n32f_error_type
     )
 {
     OpenAPI_failed_modification_info_t *failed_modification_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_failed_modification_info_t));
@@ -26,7 +26,6 @@ void OpenAPI_failed_modification_info_free(OpenAPI_failed_modification_info_t *f
     }
     OpenAPI_lnode_t *node;
     ogs_free(failed_modification_info->ipx_id);
-    OpenAPI_n32f_error_type_free(failed_modification_info->n32f_error_type);
     ogs_free(failed_modification_info);
 }
 
@@ -45,13 +44,7 @@ cJSON *OpenAPI_failed_modification_info_convertToJSON(OpenAPI_failed_modificatio
         goto end;
     }
 
-    cJSON *n32f_error_type_local_JSON = OpenAPI_n32f_error_type_convertToJSON(failed_modification_info->n32f_error_type);
-    if (n32f_error_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_failed_modification_info_convertToJSON() failed [n32f_error_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "n32fErrorType", n32f_error_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "n32fErrorType", OpenAPI_n32f_error_type_ToString(failed_modification_info->n32f_error_type)) == NULL) {
         ogs_error("OpenAPI_failed_modification_info_convertToJSON() failed [n32f_error_type]");
         goto end;
     }
@@ -81,13 +74,17 @@ OpenAPI_failed_modification_info_t *OpenAPI_failed_modification_info_parseFromJS
         goto end;
     }
 
-    OpenAPI_n32f_error_type_t *n32f_error_type_local_nonprim = NULL;
+    OpenAPI_n32f_error_type_e n32f_error_typeVariable;
 
-    n32f_error_type_local_nonprim = OpenAPI_n32f_error_type_parseFromJSON(n32f_error_type);
+    if (!cJSON_IsString(n32f_error_type)) {
+        ogs_error("OpenAPI_failed_modification_info_parseFromJSON() failed [n32f_error_type]");
+        goto end;
+    }
+    n32f_error_typeVariable = OpenAPI_n32f_error_type_FromString(n32f_error_type->valuestring);
 
     failed_modification_info_local_var = OpenAPI_failed_modification_info_create (
         ogs_strdup(ipx_id->valuestring),
-        n32f_error_type_local_nonprim
+        n32f_error_typeVariable
         );
 
     return failed_modification_info_local_var;

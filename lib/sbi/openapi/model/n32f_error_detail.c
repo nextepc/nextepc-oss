@@ -6,7 +6,7 @@
 
 OpenAPI_n32f_error_detail_t *OpenAPI_n32f_error_detail_create(
     char *attribute,
-    OpenAPI_failure_reason_t *msg_reconstruct_fail_reason
+    OpenAPI_failure_reason_e msg_reconstruct_fail_reason
     )
 {
     OpenAPI_n32f_error_detail_t *n32f_error_detail_local_var = OpenAPI_malloc(sizeof(OpenAPI_n32f_error_detail_t));
@@ -26,7 +26,6 @@ void OpenAPI_n32f_error_detail_free(OpenAPI_n32f_error_detail_t *n32f_error_deta
     }
     OpenAPI_lnode_t *node;
     ogs_free(n32f_error_detail->attribute);
-    OpenAPI_failure_reason_free(n32f_error_detail->msg_reconstruct_fail_reason);
     ogs_free(n32f_error_detail);
 }
 
@@ -45,13 +44,7 @@ cJSON *OpenAPI_n32f_error_detail_convertToJSON(OpenAPI_n32f_error_detail_t *n32f
         goto end;
     }
 
-    cJSON *msg_reconstruct_fail_reason_local_JSON = OpenAPI_failure_reason_convertToJSON(n32f_error_detail->msg_reconstruct_fail_reason);
-    if (msg_reconstruct_fail_reason_local_JSON == NULL) {
-        ogs_error("OpenAPI_n32f_error_detail_convertToJSON() failed [msg_reconstruct_fail_reason]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "msgReconstructFailReason", msg_reconstruct_fail_reason_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "msgReconstructFailReason", OpenAPI_failure_reason_ToString(n32f_error_detail->msg_reconstruct_fail_reason)) == NULL) {
         ogs_error("OpenAPI_n32f_error_detail_convertToJSON() failed [msg_reconstruct_fail_reason]");
         goto end;
     }
@@ -81,13 +74,17 @@ OpenAPI_n32f_error_detail_t *OpenAPI_n32f_error_detail_parseFromJSON(cJSON *n32f
         goto end;
     }
 
-    OpenAPI_failure_reason_t *msg_reconstruct_fail_reason_local_nonprim = NULL;
+    OpenAPI_failure_reason_e msg_reconstruct_fail_reasonVariable;
 
-    msg_reconstruct_fail_reason_local_nonprim = OpenAPI_failure_reason_parseFromJSON(msg_reconstruct_fail_reason);
+    if (!cJSON_IsString(msg_reconstruct_fail_reason)) {
+        ogs_error("OpenAPI_n32f_error_detail_parseFromJSON() failed [msg_reconstruct_fail_reason]");
+        goto end;
+    }
+    msg_reconstruct_fail_reasonVariable = OpenAPI_failure_reason_FromString(msg_reconstruct_fail_reason->valuestring);
 
     n32f_error_detail_local_var = OpenAPI_n32f_error_detail_create (
         ogs_strdup(attribute->valuestring),
-        msg_reconstruct_fail_reason_local_nonprim
+        msg_reconstruct_fail_reasonVariable
         );
 
     return n32f_error_detail_local_var;

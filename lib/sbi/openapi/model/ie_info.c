@@ -5,8 +5,8 @@
 #include "ie_info.h"
 
 OpenAPI_ie_info_t *OpenAPI_ie_info_create(
-    OpenAPI_ie_location_t *ie_loc,
-    OpenAPI_ie_type_t *ie_type,
+    OpenAPI_ie_location_e ie_loc,
+    OpenAPI_ie_type_e ie_type,
     char *req_ie,
     char *rsp_ie,
     int is_modifiable,
@@ -33,8 +33,6 @@ void OpenAPI_ie_info_free(OpenAPI_ie_info_t *ie_info)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_ie_location_free(ie_info->ie_loc);
-    OpenAPI_ie_type_free(ie_info->ie_type);
     ogs_free(ie_info->req_ie);
     ogs_free(ie_info->rsp_ie);
     OpenAPI_list_for_each(ie_info->is_modifiable_by_ipx, node) {
@@ -56,24 +54,12 @@ cJSON *OpenAPI_ie_info_convertToJSON(OpenAPI_ie_info_t *ie_info)
     }
 
     item = cJSON_CreateObject();
-    cJSON *ie_loc_local_JSON = OpenAPI_ie_location_convertToJSON(ie_info->ie_loc);
-    if (ie_loc_local_JSON == NULL) {
-        ogs_error("OpenAPI_ie_info_convertToJSON() failed [ie_loc]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "ieLoc", ie_loc_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "ieLoc", OpenAPI_ie_location_ToString(ie_info->ie_loc)) == NULL) {
         ogs_error("OpenAPI_ie_info_convertToJSON() failed [ie_loc]");
         goto end;
     }
 
-    cJSON *ie_type_local_JSON = OpenAPI_ie_type_convertToJSON(ie_info->ie_type);
-    if (ie_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_ie_info_convertToJSON() failed [ie_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "ieType", ie_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "ieType", OpenAPI_ie_type_ToString(ie_info->ie_type)) == NULL) {
         ogs_error("OpenAPI_ie_info_convertToJSON() failed [ie_type]");
         goto end;
     }
@@ -127,9 +113,13 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_parseFromJSON(cJSON *ie_infoJSON)
         goto end;
     }
 
-    OpenAPI_ie_location_t *ie_loc_local_nonprim = NULL;
+    OpenAPI_ie_location_e ie_locVariable;
 
-    ie_loc_local_nonprim = OpenAPI_ie_location_parseFromJSON(ie_loc);
+    if (!cJSON_IsString(ie_loc)) {
+        ogs_error("OpenAPI_ie_info_parseFromJSON() failed [ie_loc]");
+        goto end;
+    }
+    ie_locVariable = OpenAPI_ie_location_FromString(ie_loc->valuestring);
 
     cJSON *ie_type = cJSON_GetObjectItemCaseSensitive(ie_infoJSON, "ieType");
     if (!ie_type) {
@@ -137,9 +127,13 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_parseFromJSON(cJSON *ie_infoJSON)
         goto end;
     }
 
-    OpenAPI_ie_type_t *ie_type_local_nonprim = NULL;
+    OpenAPI_ie_type_e ie_typeVariable;
 
-    ie_type_local_nonprim = OpenAPI_ie_type_parseFromJSON(ie_type);
+    if (!cJSON_IsString(ie_type)) {
+        ogs_error("OpenAPI_ie_info_parseFromJSON() failed [ie_type]");
+        goto end;
+    }
+    ie_typeVariable = OpenAPI_ie_type_FromString(ie_type->valuestring);
 
     cJSON *req_ie = cJSON_GetObjectItemCaseSensitive(ie_infoJSON, "reqIe");
 
@@ -186,8 +180,8 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_parseFromJSON(cJSON *ie_infoJSON)
     }
 
     ie_info_local_var = OpenAPI_ie_info_create (
-        ie_loc_local_nonprim,
-        ie_type_local_nonprim,
+        ie_locVariable,
+        ie_typeVariable,
         req_ie ? ogs_strdup(req_ie->valuestring) : NULL,
         rsp_ie ? ogs_strdup(rsp_ie->valuestring) : NULL,
         is_modifiable ? is_modifiable->valueint : 0,
