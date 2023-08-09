@@ -48,7 +48,7 @@ foreach file : example_conf
             configuration : conf_data)
 endforeach
 
-subdir('open5gs')
+subdir('nextepc')
 subdir('freeDiameter')
 subdir('systemd')
 subdir('logrotate')
