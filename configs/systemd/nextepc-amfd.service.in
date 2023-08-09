@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC AMF Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-amfd -c @sysconfdir@/nextepc/amf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

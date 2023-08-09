@@ -16,22 +16,22 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 systemd_conf_in = '''
-    open5gs-mmed.service
-    open5gs-sgwcd.service
-    open5gs-smfd.service
-    open5gs-amfd.service
-    open5gs-sgwud.service
-    open5gs-upfd.service
-    open5gs-hssd.service
-    open5gs-pcrfd.service
-    open5gs-nrfd.service
-    open5gs-scpd.service
-    open5gs-ausfd.service
-    open5gs-udmd.service
-    open5gs-pcfd.service
-    open5gs-nssfd.service
-    open5gs-bsfd.service
-    open5gs-udrd.service
+    nextepc-mmed.service
+    nextepc-sgwcd.service
+    nextepc-smfd.service
+    nextepc-amfd.service
+    nextepc-sgwud.service
+    nextepc-upfd.service
+    nextepc-hssd.service
+    nextepc-pcrfd.service
+    nextepc-nrfd.service
+    nextepc-scpd.service
+    nextepc-ausfd.service
+    nextepc-udmd.service
+    nextepc-pcfd.service
+    nextepc-nssfd.service
+    nextepc-bsfd.service
+    nextepc-udrd.service
 '''.split()
 
 foreach file : systemd_conf_in
@@ -42,8 +42,8 @@ foreach file : systemd_conf_in
 endforeach
 
 systemd_conf = '''
-    99-open5gs.netdev
-    99-open5gs.network        
+    99-nextepc.netdev
+    99-nextepc.network        
 '''.split()
 
 foreach file : systemd_conf

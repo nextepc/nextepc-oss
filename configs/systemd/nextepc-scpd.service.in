@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC NRF Daemon
+Wants=mongodb.service mongod.service
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-scpd -c @sysconfdir@/nextepc/scp.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

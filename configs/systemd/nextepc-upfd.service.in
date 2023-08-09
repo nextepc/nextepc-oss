@@ -1,0 +1,19 @@
+[Unit]
+Description=NextEPC UPF Daemon
+After=network-online.target systemd-networkd.service
+Wants=systemd-networkd.service
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-upfd -c @sysconfdir@/nextepc/upf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

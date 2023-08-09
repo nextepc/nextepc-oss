@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC AUSF Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-ausfd -c @sysconfdir@/nextepc/ausf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

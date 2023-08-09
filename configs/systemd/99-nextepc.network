@@ -1,0 +1,12 @@
+[Match]
+Name=upftun0
+
+[Network]
+ConfigureWithoutCarrier=yes
+Address=10.45.0.1/16
+Address=2001:db8:cafe::1/48
+
+[Link]
+RequiredForOnline=no
+MTUBytes=1400
+RequiredForOnline=false

@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC NSSF Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-nssfd -c @sysconfdir@/nextepc/nssf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

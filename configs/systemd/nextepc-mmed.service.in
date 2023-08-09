@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC MME Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-mmed -c @sysconfdir@/nextepc/mme.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

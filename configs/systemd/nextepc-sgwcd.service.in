@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC SGW-C Daemon
+After=network-online.target
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-sgwcd -c @sysconfdir@/nextepc/sgwc.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

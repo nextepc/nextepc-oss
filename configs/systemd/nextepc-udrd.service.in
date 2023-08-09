@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC UDR Daemon
+Wants=mongodb.service mongod.service
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-udrd -c @sysconfdir@/nextepc/udr.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

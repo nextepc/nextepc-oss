@@ -1,0 +1,18 @@
+[Unit]
+Description=NextEPC PCF Daemon
+Wants=mongodb.service mongod.service
+
+[Service]
+Type=simple
+
+User=nextepc
+Group=nextepc
+
+Restart=always
+ExecStart=@bindir@/nextepc-pcfd -c @sysconfdir@/nextepc/pcf.yaml
+RestartSec=2
+RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
