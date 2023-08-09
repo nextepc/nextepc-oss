@@ -1,0 +1,6 @@
+usr/bin/nextepc-hssd
+configs/freeDiameter/hss.* etc/freeDiameter
+configs/nextepc/hss.yaml etc/nextepc
+configs/nextepc/tls/hss.key etc/nextepc/tls
+configs/nextepc/tls/hss.crt etc/nextepc/tls
+configs/systemd/nextepc-hssd.service lib/systemd/system

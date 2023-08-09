@@ -1,0 +1,6 @@
+usr/bin/nextepc-mmed
+configs/freeDiameter/mme.* etc/freeDiameter
+configs/nextepc/mme.yaml etc/nextepc
+configs/nextepc/tls/mme.key etc/nextepc/tls
+configs/nextepc/tls/mme.crt etc/nextepc/tls
+configs/systemd/nextepc-mmed.service lib/systemd/system

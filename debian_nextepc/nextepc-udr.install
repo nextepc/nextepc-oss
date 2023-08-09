@@ -1,0 +1,5 @@
+usr/bin/nextepc-udrd
+configs/nextepc/udr.yaml etc/nextepc
+configs/nextepc/tls/udr.key etc/nextepc/tls
+configs/nextepc/tls/udr.crt etc/nextepc/tls
+configs/systemd/nextepc-udrd.service lib/systemd/system

@@ -1,0 +1,6 @@
+usr/bin/nextepc-smfd
+configs/freeDiameter/smf.* etc/freeDiameter
+configs/nextepc/smf.yaml etc/nextepc
+configs/nextepc/tls/smf.key etc/nextepc/tls
+configs/nextepc/tls/smf.crt etc/nextepc/tls
+configs/systemd/nextepc-smfd.service lib/systemd/system

@@ -1,0 +1,5 @@
+usr/bin/nextepc-pcfd
+configs/nextepc/pcf.yaml etc/nextepc
+configs/nextepc/tls/pcf.key etc/nextepc/tls
+configs/nextepc/tls/pcf.crt etc/nextepc/tls
+configs/systemd/nextepc-pcfd.service lib/systemd/system

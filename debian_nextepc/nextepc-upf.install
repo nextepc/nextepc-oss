@@ -1,0 +1,4 @@
+usr/bin/nextepc-upfd
+configs/nextepc/upf.yaml etc/nextepc
+configs/systemd/99-nextepc.net* etc/systemd/network
+configs/systemd/nextepc-upfd.service lib/systemd/system

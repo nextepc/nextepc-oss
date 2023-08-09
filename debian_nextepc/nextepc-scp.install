@@ -1,0 +1,5 @@
+usr/bin/nextepc-scpd
+configs/nextepc/scp.yaml etc/nextepc
+configs/nextepc/tls/scp.key etc/nextepc/tls
+configs/nextepc/tls/scp.crt etc/nextepc/tls
+configs/systemd/nextepc-scpd.service lib/systemd/system

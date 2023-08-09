@@ -1,0 +1,5 @@
+usr/bin/nextepc-ausfd
+configs/nextepc/ausf.yaml etc/nextepc
+configs/nextepc/tls/ausf.key etc/nextepc/tls
+configs/nextepc/tls/ausf.crt etc/nextepc/tls
+configs/systemd/nextepc-ausfd.service lib/systemd/system

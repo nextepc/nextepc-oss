@@ -1,0 +1,5 @@
+usr/bin/nextepc-bsfd
+configs/nextepc/bsf.yaml etc/nextepc
+configs/nextepc/tls/bsf.key etc/nextepc/tls
+configs/nextepc/tls/bsf.crt etc/nextepc/tls
+configs/systemd/nextepc-bsfd.service lib/systemd/system

@@ -1,0 +1,6 @@
+usr/bin/nextepc-pcrfd
+configs/freeDiameter/pcrf.* etc/freeDiameter
+configs/nextepc/pcrf.yaml etc/nextepc
+configs/nextepc/tls/pcrf.key etc/nextepc/tls
+configs/nextepc/tls/pcrf.crt etc/nextepc/tls
+configs/systemd/nextepc-pcrfd.service lib/systemd/system

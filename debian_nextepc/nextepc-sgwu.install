@@ -1,0 +1,3 @@
+usr/bin/nextepc-sgwud
+configs/nextepc/sgwu.yaml etc/nextepc
+configs/systemd/nextepc-sgwud.service lib/systemd/system

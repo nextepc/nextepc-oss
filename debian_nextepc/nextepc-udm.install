@@ -1,0 +1,7 @@
+usr/bin/nextepc-udmd
+configs/nextepc/udm.yaml etc/nextepc
+configs/nextepc/tls/udm.key etc/nextepc/tls
+configs/nextepc/tls/udm.crt etc/nextepc/tls
+configs/nextepc/hnet/curve25519-*.key /etc/nextepc/hnet
+configs/nextepc/hnet/secp256r1-*.key /etc/nextepc/hnet
+configs/systemd/nextepc-udmd.service lib/systemd/system

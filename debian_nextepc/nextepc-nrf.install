@@ -1,0 +1,5 @@
+usr/bin/nextepc-nrfd
+configs/nextepc/nrf.yaml etc/nextepc
+configs/nextepc/tls/nrf.key etc/nextepc/tls
+configs/nextepc/tls/nrf.crt etc/nextepc/tls
+configs/systemd/nextepc-nrfd.service lib/systemd/system

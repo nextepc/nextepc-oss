@@ -1,0 +1,5 @@
+usr/bin/nextepc-nssfd
+configs/nextepc/nssf.yaml etc/nextepc
+configs/nextepc/tls/nssf.key etc/nextepc/tls
+configs/nextepc/tls/nssf.crt etc/nextepc/tls
+configs/systemd/nextepc-nssfd.service lib/systemd/system

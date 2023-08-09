@@ -1,0 +1,5 @@
+usr/bin/nextepc-amfd
+configs/nextepc/amf.yaml etc/nextepc
+configs/nextepc/tls/amf.key etc/nextepc/tls
+configs/nextepc/tls/amf.crt etc/nextepc/tls
+configs/systemd/nextepc-amfd.service lib/systemd/system

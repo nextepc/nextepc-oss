@@ -1,0 +1,6 @@
+usr/lib/*/libogs*.so*
+usr/lib/*/libfd*.so*
+usr/lib/*/freeDiameter/*.fdx
+usr/lib/*/lib*prom*.so*
+configs/nextepc/tls/ca.crt /etc/nextepc/tls
+configs/logrotate/nextepc /etc/logrotate.d
