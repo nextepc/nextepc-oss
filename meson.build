@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-project('open5gs', 'c', 'cpp',
+project('nextepc', 'c', 'cpp',
     version : '2.6.4',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
@@ -57,7 +57,7 @@ if clangtidy.found() != true
 endif
 
 meson.add_install_script(python3_exe, '-c',
-        mkdir_p.format(join_paths(localstatedir, 'log', 'open5gs')))
+        mkdir_p.format(join_paths(localstatedir, 'log', 'nextepc')))
 
 # Compiler flags
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'

@@ -46,7 +46,7 @@ pcrf_sources = files('''
     ../main.c
 '''.split())
 
-executable('open5gs-pcrfd',
+executable('nextepc-pcrfd',
     sources : pcrf_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/pcrf.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,

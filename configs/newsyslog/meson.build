@@ -15,5 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-file = 'open5gs.conf'
+file = 'nextepc.conf'
 configure_file(input : file + '.in', output : file, configuration : conf_data)

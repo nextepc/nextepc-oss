@@ -60,7 +60,7 @@ pcf_sources = files('''
     ../main.c
 '''.split())
 
-executable('open5gs-pcfd',
+executable('nextepc-pcfd',
     sources : pcf_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/pcf.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,

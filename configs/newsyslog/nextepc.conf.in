@@ -1,0 +1,16 @@
+# truncate rails logs every day at midnight, keep 14 previous logs, compress previous logs
+#
+# logfilename                         [owner:group] mode count size  when  flags [/pid_file]        [sig_num]
+@localstatedir@/log/nextepc/nrf.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-nrfd/pid`
+@localstatedir@/log/nextepc/scp.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-scpd/pid`
+@localstatedir@/log/nextepc/pcrf.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-pcrfd/pid`
+@localstatedir@/log/nextepc/hss.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-hssd/pid`
+@localstatedir@/log/nextepc/ausf.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-ausfd/pid`
+@localstatedir@/log/nextepc/udm.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-udmd/pid`
+@localstatedir@/log/nextepc/udr.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-udrd/pid`
+@localstatedir@/log/nextepc/upf.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-upfd/pid`
+@localstatedir@/log/nextepc/sgwc.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-sgwcd/pid`
+@localstatedir@/log/nextepc/sgwu.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-sgwud/pid`
+@localstatedir@/log/nextepc/smf.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-smfd/pid`
+@localstatedir@/log/nextepc/mme.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-mmed/pid`
+@localstatedir@/log/nextepc/amf.log               644  14    *     $D0   GZ    @localstatedir@/run/nextepc-amfd/pid`

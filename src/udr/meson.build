@@ -43,7 +43,7 @@ udr_sources = files('''
     ../main.c
 '''.split())
 
-executable('open5gs-udrd',
+executable('nextepc-udrd',
     sources : udr_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/udr.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,

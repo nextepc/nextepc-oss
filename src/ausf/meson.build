@@ -48,7 +48,7 @@ ausf_sources = files('''
     ../main.c
 '''.split())
 
-executable('open5gs-ausfd',
+executable('nextepc-ausfd',
     sources : ausf_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/ausf.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,

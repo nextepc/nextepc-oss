@@ -1,0 +1,14 @@
+@localstatedir@/log/nextepc/*.log {
+    daily
+    sharedscripts
+    missingok
+    compress
+    rotate 14
+    create 640 nextepc nextepc
+
+    postrotate
+        for i in nrfd scpd pcrfd hssd ausfd udmd udrd upfd sgwcd sgwud smfd mmed amfd; do
+            systemctl reload nextepc-$i
+        done
+    endscript
+}

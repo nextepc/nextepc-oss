@@ -41,7 +41,7 @@ scp_sources = files('''
     ../main.c
 '''.split())
 
-executable('open5gs-scpd',
+executable('nextepc-scpd',
     sources : scp_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/scp.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
