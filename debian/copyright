@@ -1,6 +1,10 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: open5gs
-Source: https://github.com/open5gs/open5gs
+Upstream-Name: nextepc
+Source: https://github.com/nextepc/nextepc-oss
+
+Files: *
+Copyright: 2019 NextEPC Inc.
+License: AGPL-3
 
 Files: *
 Copyright: 2017 Open5GS Group

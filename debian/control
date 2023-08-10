@@ -1,8 +1,7 @@
-Source: open5gs
+Source: nextepc
 Section: net
 Priority: optional
 Maintainer: Harald Welte <laforge@gnumonks.org>
-Uploaders: Sukchan Lee <acetcom@gmail.com>
 Build-Depends: debhelper (>= 11),
                git,
                pkg-config,
@@ -25,265 +24,212 @@ Build-Depends: debhelper (>= 11),
                libtalloc-dev,
 Standards-Version: 4.3.0
 Rules-Requires-Root: no
-Homepage: https://open5gs.org
-Vcs-Browser: https://github.com/open5gs/open5gs
-Vcs-Git: git://github.com/open5gs/open5gs
+Vcs-Browser: https://github.com/nextepc/nextepc-oss
+Vcs-Git: git://github.com/nextepc/nextepc-oss
 
-Package: open5gs-common
+Package: nextepc-common
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends}
 Description: 5G Core and EPC (Shared Files)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package contains some core libraries/plugins required by the other
- binary packages such as open5gs-{mme,sgwc,sgwu,amf,smf,upf,...}.
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-mme
+
+Package: nextepc-mme
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: MME (Mobility Management Entity)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the MME (Mobility Management Engine), which
- terminates the S1 interfaces from the eNodeBs cells in the cellular
- network, and interfaces via S11 to the SGW-C as well as via S6a to the
- HSS.
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-sgwc
+
+Package: nextepc-sgwc
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: SGW-C (Serving Gateway - Control Plane)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the SGW-C (Serving Gateway - Control Plane)
- which is situated between the MME and PGW. It implements the S11 interface
- to the MME, and the S5 interface to the SMF-C.
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-smf
+
+Package: nextepc-smf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: SMF (Session Management Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the SMF (Session Management Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-amf
+
+Package: nextepc-amf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: AMF (Access and Mobility Management Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the AMF (Access and Mobility Management Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-sgwu
+
+Package: nextepc-sgwu
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: SGW-U (Serving Gateway - User Plane)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the SGW-U (Serving Gateway - User Plane)
- which is situated between the eNB and UPF. It implements the S1U interface
- to the eNB, and the S5U interface to the SMF-U.
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-upf
+
+Package: nextepc-upf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          udev,
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: UPF (User Plane Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the UPF (User Plane Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-hss
+
+Package: nextepc-hss
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          mongodb-org | mongodb,
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: HSS (Home Subscriber Server)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the HSS (Home Subscriber Server) element of the
- EPC, i.e. the central database of mobile network subscribers, with
- their IMSI, MSISDN, cryptographic key materials, service subscription
- information, etc.  It implements the S6a interface towards the MME
- using the DIAMETER protocol.
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-pcrf
+
+Package: nextepc-pcrf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          mongodb-org | mongodb,
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: PCRF (Policy and Charging Rules Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package contains the PCRF (Policy and Charging Rules Function),
- which controls the service quality (QoS) of individual connections and
- how to account/charge related traffic.  It implements the Gx interface
- towards the SMF-C using the DIAMETER protocol.
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-nrf
+
+Package: nextepc-nrf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: NRF (Network Repository Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the NRF (Network Repository Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-scp
+
+Package: nextepc-scp
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: SCP (Network Repository Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the SCP (Service Communication Proxy)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-ausf
+
+Package: nextepc-ausf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: AUSF (Authentication Server Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the AUSF (Authentication Server Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-udm
+
+Package: nextepc-udm
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: UDM (Unified Data Management)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the UDM (Unified Data Managemement)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-pcf
+
+Package: nextepc-pcf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: PCF (Policy Control Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the PCF (Policy Control Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-nssf
+
+Package: nextepc-nssf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: NSSF (Network Slice Selection Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the NSSF (Network Slice Selection Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-bsf
+
+Package: nextepc-bsf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: BSF (Binding Support Function)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the BSF (Binding Support Function)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-udr
+
+Package: nextepc-udr
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         open5gs-common (= ${binary:Version})
+         nextepc-common (= ${binary:Version})
 Description: UDR (Unified Data Repository)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package provides the UDR (Unified Data Repository)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs
+
+Package: nextepc
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         open5gs-common (= ${binary:Version}),
-         open5gs-mme (= ${binary:Version}),
-         open5gs-sgwc (= ${binary:Version}),
-         open5gs-smf (= ${binary:Version}),
-         open5gs-amf (= ${binary:Version}),
-         open5gs-sgwu (= ${binary:Version}),
-         open5gs-upf (= ${binary:Version}),
-         open5gs-hss (= ${binary:Version}),
-         open5gs-pcrf (= ${binary:Version}),
-         open5gs-nrf (= ${binary:Version}),
-         open5gs-scp (= ${binary:Version}),
-         open5gs-ausf (= ${binary:Version}),
-         open5gs-udm (= ${binary:Version}),
-         open5gs-pcf (= ${binary:Version}),
-         open5gs-nssf (= ${binary:Version}),
-         open5gs-bsf (= ${binary:Version}),
-         open5gs-udr (= ${binary:Version})
-Description: 5G Core and EPC (metapackage)
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This is a metapackage that depends on all the open5gs parts.
+         nextepc-common (= ${binary:Version}),
+         nextepc-mme (= ${binary:Version}),
+         nextepc-sgwc (= ${binary:Version}),
+         nextepc-smf (= ${binary:Version}),
+         nextepc-amf (= ${binary:Version}),
+         nextepc-sgwu (= ${binary:Version}),
+         nextepc-upf (= ${binary:Version}),
+         nextepc-hss (= ${binary:Version}),
+         nextepc-pcrf (= ${binary:Version}),
+         nextepc-nrf (= ${binary:Version}),
+         nextepc-scp (= ${binary:Version}),
+         nextepc-ausf (= ${binary:Version}),
+         nextepc-udm (= ${binary:Version}),
+         nextepc-pcf (= ${binary:Version}),
+         nextepc-nssf (= ${binary:Version}),
+         nextepc-bsf (= ${binary:Version}),
+         nextepc-udr (= ${binary:Version})
+Description: 5GC and EPC (metapackage)
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
 
-Package: open5gs-dbg
+
+Package: nextepc-dbg
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         open5gs (= ${binary:Version})
-Description: Debug symbols for Open5GS
- Open5GS is a C-language implementation of 5G Core and EPC
- Packet Core, i.e. the core network of an NR/LTE network (Release-17)
- .
- This package contains debug symbols for Open5GS.
+         nextepc (= ${binary:Version})
+Description: Debug symbols for NextEPC
+ NextEPC OSS is an open source implementation of 5G Core and LTE EPC.
+
+
