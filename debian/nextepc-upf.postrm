@@ -21,7 +21,7 @@ set -e
 
 case "$1" in
     purge)
-    if grep "ogstun" /proc/net/dev > /dev/null; then
+    if grep "upftun0" /proc/net/dev > /dev/null; then
         ip tuntap del name upftun0 mode tun
     fi
     rm -f /etc/sysctl.d/20-nextepc.conf

@@ -138,7 +138,7 @@ static int ogs_pfcp_context_prepare(void)
 {
     self.pfcp_port = OGS_PFCP_UDP_PORT;
 
-    self.tun_ifname = "ogstun";
+    self.tun_ifname = "upftun0";
 
     return OGS_OK;
 }
