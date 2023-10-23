@@ -72,7 +72,7 @@ void ogs_pfcp_context_init(void)
     ogs_pool_random_id_generate(&ogs_pfcp_pdr_teid_pool);
 
     pdr_random_to_index = ogs_calloc(
-            sizeof(ogs_pool_id_t), ogs_pfcp_pdr_pool.size);
+            sizeof(ogs_pool_id_t), ogs_pfcp_pdr_pool.size+1);
     ogs_assert(pdr_random_to_index);
     for (i = 0; i < ogs_pfcp_pdr_pool.size; i++)
         pdr_random_to_index[ogs_pfcp_pdr_teid_pool.array[i]] = i;
@@ -143,6 +143,62 @@ static int ogs_pfcp_context_prepare(void)
     return OGS_OK;
 }
 
+static int ogs_pfcp_check_subnet_overlapping(void)
+{
+    ogs_pfcp_subnet_t *subnet = NULL;
+    ogs_pfcp_subnet_t *next_subnet = NULL;
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+    int rv = OGS_OK;
+
+    ogs_list_for_each(&self.subnet_list, subnet){
+        for (next_subnet = ogs_list_next(subnet); (next_subnet);
+                next_subnet = ogs_list_next(next_subnet)) {
+            if (strcmp(subnet->dnn, next_subnet->dnn) == 0 &&
+                subnet->gw.family == next_subnet->gw.family) {
+                uint32_t *addr1 = subnet->sub.sub;
+                uint32_t *addr2 = next_subnet->sub.sub;
+                uint32_t mask[4];
+                int i;
+                /* Get smaller subnet mask for IPv4 or IPv6 */
+                for (i = 0; i < 4 ; i++) {
+                    mask[i] = (subnet->sub.mask[i] & next_subnet->sub.mask[i]);
+                }
+                /* Compare masked subnets if they overlap */
+                if (subnet->gw.family == AF_INET) {
+                    if ((addr1[0] & mask[0]) == (addr2[0] & mask[0])) {
+                        ogs_error("Overlapping subnets in SMF configuration file: %s/%d and %s/%d",
+                                OGS_INET_NTOP(&subnet->gw.sub[0], buf1),
+                                subnet->prefixlen,
+                                OGS_INET_NTOP(&next_subnet->gw.sub[0], buf2),
+                                next_subnet->prefixlen);
+                        rv = OGS_ERROR;
+                    }
+                } else if (subnet->gw.family == AF_INET6) {
+                    if (((addr1[0] & mask[0]) == (addr2[0] & mask[0])) &&
+                        ((addr1[1] & mask[1]) == (addr2[1] & mask[1])) &&
+                        ((addr1[2] & mask[2]) == (addr2[2] & mask[2])) &&
+                        ((addr1[3] & mask[3]) == (addr2[3] & mask[3]))) {
+                        ogs_error("Overlapping subnets in SMF configuration file: %s/%d and %s/%d",
+                                OGS_INET6_NTOP(&subnet->gw.sub[0], buf1),
+                                subnet->prefixlen,
+                                OGS_INET6_NTOP(&next_subnet->gw.sub[0], buf2),
+                                next_subnet->prefixlen);
+                        rv = OGS_ERROR;
+                    }
+                } else {
+                    ogs_error("Invalid family in subnet configuration [%d]",
+                            subnet->gw.family);
+                    rv = OGS_ERROR;
+                    ogs_assert_if_reached();
+                }
+            }
+        }
+    }
+
+    return rv;
+}
+
 static int ogs_pfcp_context_validation(const char *local)
 {
     if (ogs_list_first(&self.pfcp_list) == NULL &&
@@ -150,6 +206,9 @@ static int ogs_pfcp_context_validation(const char *local)
         ogs_error("No %s.pfcp: in '%s'", local, ogs_app()->file);
         return OGS_ERROR;
     }
+    if (ogs_pfcp_check_subnet_overlapping() != OGS_OK)
+        return OGS_ERROR;
+
     return OGS_OK;
 }
 
@@ -695,7 +754,10 @@ ogs_pfcp_node_t *ogs_pfcp_node_new(ogs_sockaddr_t *sa_list)
     ogs_assert(sa_list);
 
     ogs_pool_alloc(&ogs_pfcp_node_pool, &node);
-    ogs_assert(node);
+    if (!node) {
+        ogs_error("No memory: ogs_pool_alloc() failed");
+        return NULL;
+    }
     memset(node, 0, sizeof(ogs_pfcp_node_t));
 
     node->sa_list = sa_list;
@@ -731,6 +793,11 @@ ogs_pfcp_node_t *ogs_pfcp_node_add(
 
     ogs_assert(OGS_OK == ogs_copyaddrinfo(&new, addr));
     node = ogs_pfcp_node_new(new);
+    if (!node) {
+        ogs_error("No memory : ogs_pfcp_node_new() failed");
+        ogs_freeaddrinfo(new);
+        return NULL;
+    }
 
     ogs_assert(node);
     memcpy(&node->addr, new, sizeof node->addr);
@@ -1884,16 +1951,8 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         subnet = ogs_pfcp_find_subnet(family);
 
     if (subnet == NULL) {
-        ogs_error("CHECK CONFIGURATION: Cannot find subnet [family:%d, dnn:%s]",
-                    family, dnn ? dnn : "No DNN");
-        ogs_error("Please add FALLBACK subnet as below.");
-        ogs_error("    subnet:");
-        if (family == AF_INET)
-            ogs_error("     - addr: 10.50.0.1/16");
-        else if (family == AF_INET6)
-            ogs_error("     - addr: 2001:db8:abcd::1/48");
-
-        *cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
+        ogs_error("All IP addresses in all subnets are occupied");
+        *cause_value = OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
         return NULL;
     }
 
@@ -2054,7 +2113,8 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family)
 
     ogs_list_for_each(&self.subnet_list, subnet) {
         if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
-            (strlen(subnet->dnn) == 0))
+            (strlen(subnet->dnn) == 0) &&
+            subnet->pool.avail)
             break;
     }
 
@@ -2071,7 +2131,8 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn)
     ogs_list_for_each(&self.subnet_list, subnet) {
         if ((subnet->family == AF_UNSPEC || subnet->family == family) &&
             (strlen(subnet->dnn) == 0 ||
-                (strlen(subnet->dnn) && ogs_strcasecmp(subnet->dnn, dnn) == 0)))
+                (strlen(subnet->dnn) && ogs_strcasecmp(subnet->dnn, dnn) == 0)) &&
+            subnet->pool.avail)
             break;
     }
 

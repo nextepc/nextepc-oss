@@ -40,6 +40,33 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         return false;
     }
 
+    if (!NFProfile->nf_instance_id) {
+        ogs_error("No NFProfile.NFInstanceId");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No NFProfile.NFInstanceId", NULL));
+        return false;
+    }
+
+    if (!NFProfile->nf_type) {
+        ogs_error("No NFProfile.NFType");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No NFProfile.NFType", NULL));
+        return false;
+    }
+
+    if (!NFProfile->nf_status) {
+        ogs_error("No NFProfile.NFStatus");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No NFProfile.NFStatus", NULL));
+        return false;
+    }
+
     ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
 
     if (OGS_FSM_CHECK(&nf_instance->sm, nrf_nf_state_will_register)) {
@@ -241,7 +268,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
         if (!subscription_data->req_nf_instance_id) {
             ogs_error("ogs_strdup() failed");
             ogs_sbi_subscription_data_remove(subscription_data);
-            return NULL;
+            return false;
         }
     }
 
@@ -254,7 +281,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     if (!SubscriptionData->subscription_id) {
         ogs_error("ogs_strdup() failed");
         ogs_sbi_subscription_data_remove(subscription_data);
-        return NULL;
+        return false;
     }
 
     if (SubscriptionData->requester_features) {
@@ -275,15 +302,29 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     if (!SubscriptionData->nrf_supported_features) {
         ogs_error("ogs_strdup() failed");
         ogs_sbi_subscription_data_remove(subscription_data);
-        return NULL;
+        return false;
     }
 
     SubscrCond = SubscriptionData->subscr_cond;
     if (SubscrCond) {
-        subscription_data->subscr_cond.nf_type = SubscrCond->nf_type;
-        if (SubscrCond->service_name)
+
+    /* Issue #2630 : The format of subscrCond is invalid. Must be 'oneOf'. */
+        if (SubscrCond->nf_type && SubscrCond->service_name) {
+            ogs_error("SubscrCond must be 'oneOf'");
+            ogs_sbi_subscription_data_remove(subscription_data);
+            return false;
+        }
+
+        if (SubscrCond->nf_type)
+            subscription_data->subscr_cond.nf_type = SubscrCond->nf_type;
+        else if (SubscrCond->service_name)
             subscription_data->subscr_cond.service_name =
                 ogs_strdup(SubscrCond->service_name);
+        else {
+            ogs_error("No SubscrCond");
+            ogs_sbi_subscription_data_remove(subscription_data);
+            return false;
+        }
     }
 
     subscription_data->notification_uri =
@@ -714,6 +755,22 @@ bool nrf_nnrf_handle_nf_discover(
             for (i = 0; i < discovery_option->num_of_service_names; i++)
                 ogs_debug("[%d] service-names[%s]", i,
                     discovery_option->service_names[i]);
+        }
+        if (discovery_option->num_of_snssais) {
+            for (i = 0; i < discovery_option->num_of_snssais; i++)
+                ogs_debug("[%d] snssais[SST:%d SD:0x%x]", i,
+                        discovery_option->snssais[i].sst,
+                        discovery_option->snssais[i].sd.v);
+        }
+        if (discovery_option->dnn) {
+            ogs_debug("dnn[%s]", discovery_option->dnn);
+        }
+        if (discovery_option->num_of_tai) {
+            for (i = 0; i < discovery_option->num_of_tai; i++)
+                ogs_debug("[%d] tai[PLMN_ID:%06x,TAC:%d]", i,
+                            ogs_plmn_id_hexdump(
+                                &discovery_option->tai[0].plmn_id),
+                            discovery_option->tai[0].tac.v);
         }
         if (discovery_option->requester_features) {
             ogs_debug("requester-features[0x%llx]",

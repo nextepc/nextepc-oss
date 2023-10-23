@@ -8,10 +8,13 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_create(
     OpenAPI_list_t *events,
     char *notif_uri,
     OpenAPI_list_t *req_qos_mon_params,
+    bool is_qos_mon_null,
     OpenAPI_qos_monitoring_information_rm_t *qos_mon,
     OpenAPI_list_t *req_anis,
+    bool is_usg_thres_null,
     OpenAPI_usage_threshold_rm_t *usg_thres,
     char *notif_corre_id,
+    bool is_direct_notif_ind_null,
     bool is_direct_notif_ind,
     int direct_notif_ind
 )
@@ -22,10 +25,13 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_create(
     events_subsc_req_data_rm_local_var->events = events;
     events_subsc_req_data_rm_local_var->notif_uri = notif_uri;
     events_subsc_req_data_rm_local_var->req_qos_mon_params = req_qos_mon_params;
+    events_subsc_req_data_rm_local_var->is_qos_mon_null = is_qos_mon_null;
     events_subsc_req_data_rm_local_var->qos_mon = qos_mon;
     events_subsc_req_data_rm_local_var->req_anis = req_anis;
+    events_subsc_req_data_rm_local_var->is_usg_thres_null = is_usg_thres_null;
     events_subsc_req_data_rm_local_var->usg_thres = usg_thres;
     events_subsc_req_data_rm_local_var->notif_corre_id = notif_corre_id;
+    events_subsc_req_data_rm_local_var->is_direct_notif_ind_null = is_direct_notif_ind_null;
     events_subsc_req_data_rm_local_var->is_direct_notif_ind = is_direct_notif_ind;
     events_subsc_req_data_rm_local_var->direct_notif_ind = direct_notif_ind;
 
@@ -134,6 +140,11 @@ cJSON *OpenAPI_events_subsc_req_data_rm_convertToJSON(OpenAPI_events_subsc_req_d
         ogs_error("OpenAPI_events_subsc_req_data_rm_convertToJSON() failed [qos_mon]");
         goto end;
     }
+    } else if (events_subsc_req_data_rm->is_qos_mon_null) {
+        if (cJSON_AddNullToObject(item, "qosMon") == NULL) {
+            ogs_error("OpenAPI_events_subsc_req_data_rm_convertToJSON() failed [qos_mon]");
+            goto end;
+        }
     }
 
     if (events_subsc_req_data_rm->req_anis != OpenAPI_required_access_info_NULL) {
@@ -161,6 +172,11 @@ cJSON *OpenAPI_events_subsc_req_data_rm_convertToJSON(OpenAPI_events_subsc_req_d
         ogs_error("OpenAPI_events_subsc_req_data_rm_convertToJSON() failed [usg_thres]");
         goto end;
     }
+    } else if (events_subsc_req_data_rm->is_usg_thres_null) {
+        if (cJSON_AddNullToObject(item, "usgThres") == NULL) {
+            ogs_error("OpenAPI_events_subsc_req_data_rm_convertToJSON() failed [usg_thres]");
+            goto end;
+        }
     }
 
     if (events_subsc_req_data_rm->notif_corre_id) {
@@ -175,6 +191,11 @@ cJSON *OpenAPI_events_subsc_req_data_rm_convertToJSON(OpenAPI_events_subsc_req_d
         ogs_error("OpenAPI_events_subsc_req_data_rm_convertToJSON() failed [direct_notif_ind]");
         goto end;
     }
+    } else if (events_subsc_req_data_rm->is_direct_notif_ind_null) {
+        if (cJSON_AddNullToObject(item, "directNotifInd") == NULL) {
+            ogs_error("OpenAPI_events_subsc_req_data_rm_convertToJSON() failed [direct_notif_ind]");
+            goto end;
+        }
     }
 
 end:
@@ -243,20 +264,28 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
         req_qos_mon_paramsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(req_qos_mon_params_local, req_qos_mon_params) {
+            OpenAPI_requested_qos_monitoring_parameter_e localEnum = OpenAPI_requested_qos_monitoring_parameter_NULL;
             if (!cJSON_IsString(req_qos_mon_params_local)) {
                 ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [req_qos_mon_params]");
                 goto end;
             }
-            OpenAPI_list_add(req_qos_mon_paramsList, (void *)OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring));
+            localEnum = OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_requested_qos_monitoring_parameter_FromString(req_qos_mon_params_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(req_qos_mon_paramsList, (void *)localEnum);
         }
     }
 
     qos_mon = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "qosMon");
     if (qos_mon) {
+    if (!cJSON_IsNull(qos_mon)) {
     qos_mon_local_nonprim = OpenAPI_qos_monitoring_information_rm_parseFromJSON(qos_mon);
     if (!qos_mon_local_nonprim) {
         ogs_error("OpenAPI_qos_monitoring_information_rm_parseFromJSON failed [qos_mon]");
         goto end;
+    }
     }
     }
 
@@ -271,20 +300,28 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
         req_anisList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(req_anis_local, req_anis) {
+            OpenAPI_required_access_info_e localEnum = OpenAPI_required_access_info_NULL;
             if (!cJSON_IsString(req_anis_local)) {
                 ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [req_anis]");
                 goto end;
             }
-            OpenAPI_list_add(req_anisList, (void *)OpenAPI_required_access_info_FromString(req_anis_local->valuestring));
+            localEnum = OpenAPI_required_access_info_FromString(req_anis_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_required_access_info_FromString(req_anis_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(req_anisList, (void *)localEnum);
         }
     }
 
     usg_thres = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "usgThres");
     if (usg_thres) {
+    if (!cJSON_IsNull(usg_thres)) {
     usg_thres_local_nonprim = OpenAPI_usage_threshold_rm_parseFromJSON(usg_thres);
     if (!usg_thres_local_nonprim) {
         ogs_error("OpenAPI_usage_threshold_rm_parseFromJSON failed [usg_thres]");
         goto end;
+    }
     }
     }
 
@@ -298,9 +335,11 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
 
     direct_notif_ind = cJSON_GetObjectItemCaseSensitive(events_subsc_req_data_rmJSON, "directNotifInd");
     if (direct_notif_ind) {
+    if (!cJSON_IsNull(direct_notif_ind)) {
     if (!cJSON_IsBool(direct_notif_ind)) {
         ogs_error("OpenAPI_events_subsc_req_data_rm_parseFromJSON() failed [direct_notif_ind]");
         goto end;
+    }
     }
     }
 
@@ -308,10 +347,13 @@ OpenAPI_events_subsc_req_data_rm_t *OpenAPI_events_subsc_req_data_rm_parseFromJS
         eventsList,
         notif_uri && !cJSON_IsNull(notif_uri) ? ogs_strdup(notif_uri->valuestring) : NULL,
         req_qos_mon_params ? req_qos_mon_paramsList : NULL,
+        qos_mon && cJSON_IsNull(qos_mon) ? true : false,
         qos_mon ? qos_mon_local_nonprim : NULL,
         req_anis ? req_anisList : NULL,
+        usg_thres && cJSON_IsNull(usg_thres) ? true : false,
         usg_thres ? usg_thres_local_nonprim : NULL,
         notif_corre_id && !cJSON_IsNull(notif_corre_id) ? ogs_strdup(notif_corre_id->valuestring) : NULL,
+        direct_notif_ind && cJSON_IsNull(direct_notif_ind) ? true : false,
         direct_notif_ind ? true : false,
         direct_notif_ind ? direct_notif_ind->valueint : 0
     );

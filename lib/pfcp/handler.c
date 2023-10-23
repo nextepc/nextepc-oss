@@ -218,7 +218,8 @@ bool ogs_pfcp_up_handle_association_setup_response(
 }
 
 bool ogs_pfcp_up_handle_pdr(
-        ogs_pfcp_pdr_t *pdr, uint8_t type, ogs_pkbuf_t *recvbuf,
+        ogs_pfcp_pdr_t *pdr, uint8_t type,
+        ogs_gtp2_header_desc_t *recvhdr, ogs_pkbuf_t *recvbuf,
         ogs_pfcp_user_plane_report_t *report)
 {
     ogs_pfcp_far_t *far = NULL;
@@ -248,9 +249,27 @@ bool ogs_pfcp_up_handle_pdr(
 
     } else {
         if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
+            ogs_gtp2_header_desc_t sendhdr;
 
             /* Forward packet */
-            ogs_pfcp_send_g_pdu(pdr, type, sendbuf);
+            memset(&sendhdr, 0, sizeof(sendhdr));
+            sendhdr.type = type;
+
+            if (recvhdr) {
+                /*
+                 * Issue #2584
+                 * Discussion #2477
+                 *
+                 * Forward PDCP Number via Indirect Tunnel during Handover
+                 */
+                if (recvhdr->pdcp_number_presence == true) {
+                    sendhdr.pdcp_number_presence =
+                        recvhdr->pdcp_number_presence;
+                    sendhdr.pdcp_number = recvhdr->pdcp_number;
+                }
+            }
+
+            ogs_pfcp_send_g_pdu(pdr, &sendhdr, sendbuf);
 
         } else if (far->apply_action & OGS_PFCP_APPLY_ACTION_BUFF) {
 
@@ -1126,7 +1145,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_create_qer(ogs_pfcp_sess_t *sess,
     if (message->qer_id.presence == 0) {
         ogs_error("No QER-ID");
         *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-        *offending_ie_value = OGS_PFCP_FAR_ID_TYPE;
+        *offending_ie_value = OGS_PFCP_QER_ID_TYPE;
         return NULL;
     }
 
@@ -1134,7 +1153,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_create_qer(ogs_pfcp_sess_t *sess,
     if (!qer) {
         ogs_error("Cannot find QER-ID[%d] in PDR", message->qer_id.u32);
         *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
-        *offending_ie_value = OGS_PFCP_FAR_ID_TYPE;
+        *offending_ie_value = OGS_PFCP_QER_ID_TYPE;
         return NULL;
     }
 
@@ -1178,7 +1197,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_update_qer(ogs_pfcp_sess_t *sess,
     if (message->qer_id.presence == 0) {
         ogs_error("No QER-ID");
         *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-        *offending_ie_value = OGS_PFCP_FAR_ID_TYPE;
+        *offending_ie_value = OGS_PFCP_QER_ID_TYPE;
         return NULL;
     }
 
@@ -1186,7 +1205,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_update_qer(ogs_pfcp_sess_t *sess,
     if (!qer) {
         ogs_error("Cannot find QER-ID[%d] in PDR", message->qer_id.u32);
         *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
-        *offending_ie_value = OGS_PFCP_FAR_ID_TYPE;
+        *offending_ie_value = OGS_PFCP_QER_ID_TYPE;
         return NULL;
     }
 

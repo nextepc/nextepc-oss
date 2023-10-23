@@ -130,6 +130,7 @@ typedef struct amf_gnb_s {
     ogs_fsm_t       sm;         /* A state machine */
 
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
+    ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
     struct {
@@ -301,6 +302,12 @@ struct amf_ue_s {
     ((__aMF)->security_context_available == 1) && \
      ((__aMF)->mac_failed == 0) && \
      ((__aMF)->nas.ue.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
+#define CLEAR_SECURITY_CONTEXT(__aMF) \
+    do { \
+        ogs_assert((__aMF)); \
+        (__aMF)->security_context_available = 0; \
+        (__aMF)->mac_failed = 0; \
+    } while(0)
     int             security_context_available;
     int             mac_failed;
 
@@ -760,7 +767,7 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
     do { \
         ogs_sbi_object_t *sbi_object = NULL; \
         ogs_assert(__sESS); \
-        sbi_object = &sess->sbi; \
+        sbi_object = &(__sESS)->sbi; \
         ogs_assert(sbi_object); \
         \
         ogs_error("AMF_SESS_CLEAR"); \

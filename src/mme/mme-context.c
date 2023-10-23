@@ -193,6 +193,9 @@ static int mme_context_prepare(void)
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
+    /* Set the default T3412 to 9 minutes for backward compatibility. */
+    self.time.t3412.value = 540;
+
     return OGS_OK;
 }
 
@@ -267,13 +270,18 @@ static int mme_context_validation(void)
         return OGS_ERROR;
     }
     if (self.num_of_ciphering_order == 0) {
-        ogs_error("no mme.security.ciphering_order in '%s'",
+        ogs_error("No mme.security.ciphering_order in '%s'",
                 ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
         OGS_OK) {
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3402.value);
+        return OGS_ERROR;
+    }
+    if (!self.time.t3412.value) {
+        ogs_error("No mme.time.t3412.value in '%s'",
+                ogs_app()->file);
         return OGS_ERROR;
     }
     if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3412.value) !=
@@ -3242,6 +3250,13 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 
         switch(eps_mobile_identity->imsi.type) {
         case OGS_NAS_EPS_MOBILE_IDENTITY_IMSI:
+            if (sizeof(ogs_nas_mobile_identity_imsi_t) !=
+                    eps_mobile_identity->length) {
+                ogs_error("mobile_identity length (%d != %d)",
+                        (int)sizeof(ogs_nas_mobile_identity_imsi_t),
+                        eps_mobile_identity->length);
+                return NULL;
+            }
             ogs_nas_eps_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
                 imsi_bcd);
@@ -4069,14 +4084,42 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
             }
         } else {
             sess = mme_sess_first(mme_ue);
+            ogs_debug("[%s:%p]", mme_ue->imsi_bcd, mme_ue);
+            if (sess) {
+                ogs_debug("[%s:%d:%d:%p]",
+                    sess->session ? sess->session->name : "Unknown",
+                    sess->pti, pti, sess);
+                ogs_debug("[%s:%p]",
+                    sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
+                    sess->mme_ue);
+            }
+            MME_UE_LIST_CHECK;
         }
 
-        if (!sess)
+        if (!sess) {
             sess = mme_sess_add(mme_ue, pti);
-        else
-            sess->pti = pti;
+            ogs_assert(sess);
 
-        ogs_assert(sess);
+            ogs_debug("[%s:%p]", mme_ue->imsi_bcd, mme_ue);
+            ogs_debug("[%s:%d:%d:%p]",
+                sess->session ? sess->session->name : "Unknown",
+                sess->pti, pti, sess);
+            ogs_debug("[%s:%p]",
+                sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
+                sess->mme_ue);
+            MME_UE_LIST_CHECK;
+        } else {
+            sess->pti = pti;
+            ogs_debug("[%s:%p]", mme_ue->imsi_bcd, mme_ue);
+            ogs_debug("[%s:%d:%d:%p]",
+                sess->session ? sess->session->name : "Unknown",
+                sess->pti, pti, sess);
+            ogs_debug("[%s:%p]",
+                sess->mme_ue ? sess->mme_ue->imsi_bcd : "Unknown",
+                sess->mme_ue);
+            MME_UE_LIST_CHECK;
+        }
+
     } else {
         sess = mme_sess_find_by_pti(mme_ue, pti);
         if (!sess) {

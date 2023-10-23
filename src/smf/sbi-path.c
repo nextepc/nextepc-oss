@@ -62,11 +62,13 @@ int smf_sbi_open(void)
 
     /* Setup Subscription-Data */
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_COMM);
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NAMF_COMM);
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL);
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL);
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_SDM);
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDM_SDM);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDM_UECM);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -109,10 +111,11 @@ int smf_sbi_discover_and_send(
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("smf_sbi_discover_and_send() failed");
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", smf_ue->supi));
+        if (stream)
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                    "Cannot discover", smf_ue->supi));
         return OGS_ERROR;
     }
 
@@ -191,7 +194,8 @@ void smf_namf_comm_send_n1_n2_pdu_establishment_reject(
 
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_stream_t *stream,
-        int status, const char *title, const char *detail,
+        int status, ogs_sbi_app_errno_e err,
+        const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf)
 {
     ogs_sbi_message_t sendmsg;
@@ -210,6 +214,8 @@ void smf_sbi_send_sm_context_create_error(
     }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
+    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
+        problem.cause = (char*)ogs_sbi_app_strerror(err);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.SmContextCreateError = &SmContextCreateError;
@@ -311,8 +317,11 @@ void smf_sbi_send_sm_context_updated_data(
 
 void smf_sbi_send_sm_context_update_error(
         ogs_sbi_stream_t *stream,
-        int status, const char *title, const char *detail,
-        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
+        int status, ogs_sbi_app_errno_e err,
+        const char *title, const char *detail,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf,
+        OpenAPI_n2_sm_info_type_e n2_sm_info_type,
+        OpenAPI_up_cnx_state_e up_cnx_state)
 {
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -331,6 +340,8 @@ void smf_sbi_send_sm_context_update_error(
     }
     problem.title = (char*)title;
     problem.detail = (char*)detail;
+    if (err > OGS_SBI_APP_ERRNO_NULL && err < OGS_SBI_MAX_NUM_OF_APP_ERRNO)
+        problem.cause = (char*)ogs_sbi_app_strerror(err);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.SmContextUpdateError = &SmContextUpdateError;
@@ -359,6 +370,9 @@ void smf_sbi_send_sm_context_update_error(
         sendmsg.part[sendmsg.num_of_part].pkbuf = n2smbuf;
         sendmsg.num_of_part++;
     }
+
+    SmContextUpdateError.n2_sm_info_type = n2_sm_info_type;
+    SmContextUpdateError.up_cnx_state = up_cnx_state;
 
     response = ogs_sbi_build_response(&sendmsg, problem.status);
     ogs_assert(response);

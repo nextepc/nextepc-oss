@@ -11,13 +11,16 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     OpenAPI_list_t *internal_group_ids,
     OpenAPI_list_t* shared_vn_group_data_ids,
     OpenAPI_ambr_rm_t *subscribed_ue_ambr,
+    bool is_nssai_null,
     OpenAPI_nssai_1_t *nssai,
     OpenAPI_set_t *rat_restrictions,
     OpenAPI_list_t *forbidden_areas,
     OpenAPI_service_area_restriction_1_t *service_area_restriction,
     OpenAPI_list_t *core_network_type_restrictions,
+    bool is_rfsp_index_null,
     bool is_rfsp_index,
     int rfsp_index,
+    bool is_subs_reg_timer_null,
     bool is_subs_reg_timer,
     int subs_reg_timer,
     bool is_ue_usage_type,
@@ -26,6 +29,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     int mps_priority,
     bool is_mcs_priority,
     int mcs_priority,
+    bool is_active_time_null,
     bool is_active_time,
     int active_time,
     OpenAPI_sor_info_1_t *sor_info,
@@ -45,6 +49,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     int service_gap_time,
     OpenAPI_mdt_user_consent_e mdt_user_consent,
     OpenAPI_mdt_configuration_1_t *mdt_configuration,
+    bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     OpenAPI_cag_data_1_t *cag_data,
     char *stn_sr,
@@ -83,13 +88,16 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     access_and_mobility_subscription_data_1_local_var->internal_group_ids = internal_group_ids;
     access_and_mobility_subscription_data_1_local_var->shared_vn_group_data_ids = shared_vn_group_data_ids;
     access_and_mobility_subscription_data_1_local_var->subscribed_ue_ambr = subscribed_ue_ambr;
+    access_and_mobility_subscription_data_1_local_var->is_nssai_null = is_nssai_null;
     access_and_mobility_subscription_data_1_local_var->nssai = nssai;
     access_and_mobility_subscription_data_1_local_var->rat_restrictions = rat_restrictions;
     access_and_mobility_subscription_data_1_local_var->forbidden_areas = forbidden_areas;
     access_and_mobility_subscription_data_1_local_var->service_area_restriction = service_area_restriction;
     access_and_mobility_subscription_data_1_local_var->core_network_type_restrictions = core_network_type_restrictions;
+    access_and_mobility_subscription_data_1_local_var->is_rfsp_index_null = is_rfsp_index_null;
     access_and_mobility_subscription_data_1_local_var->is_rfsp_index = is_rfsp_index;
     access_and_mobility_subscription_data_1_local_var->rfsp_index = rfsp_index;
+    access_and_mobility_subscription_data_1_local_var->is_subs_reg_timer_null = is_subs_reg_timer_null;
     access_and_mobility_subscription_data_1_local_var->is_subs_reg_timer = is_subs_reg_timer;
     access_and_mobility_subscription_data_1_local_var->subs_reg_timer = subs_reg_timer;
     access_and_mobility_subscription_data_1_local_var->is_ue_usage_type = is_ue_usage_type;
@@ -98,6 +106,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     access_and_mobility_subscription_data_1_local_var->mps_priority = mps_priority;
     access_and_mobility_subscription_data_1_local_var->is_mcs_priority = is_mcs_priority;
     access_and_mobility_subscription_data_1_local_var->mcs_priority = mcs_priority;
+    access_and_mobility_subscription_data_1_local_var->is_active_time_null = is_active_time_null;
     access_and_mobility_subscription_data_1_local_var->is_active_time = is_active_time;
     access_and_mobility_subscription_data_1_local_var->active_time = active_time;
     access_and_mobility_subscription_data_1_local_var->sor_info = sor_info;
@@ -117,6 +126,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
     access_and_mobility_subscription_data_1_local_var->service_gap_time = service_gap_time;
     access_and_mobility_subscription_data_1_local_var->mdt_user_consent = mdt_user_consent;
     access_and_mobility_subscription_data_1_local_var->mdt_configuration = mdt_configuration;
+    access_and_mobility_subscription_data_1_local_var->is_trace_data_null = is_trace_data_null;
     access_and_mobility_subscription_data_1_local_var->trace_data = trace_data;
     access_and_mobility_subscription_data_1_local_var->cag_data = cag_data;
     access_and_mobility_subscription_data_1_local_var->stn_sr = stn_sr;
@@ -440,6 +450,11 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_1_convertToJSON(OpenAPI_acc
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [nssai]");
         goto end;
     }
+    } else if (access_and_mobility_subscription_data_1->is_nssai_null) {
+        if (cJSON_AddNullToObject(item, "nssai") == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [nssai]");
+            goto end;
+        }
     }
 
     if (access_and_mobility_subscription_data_1->rat_restrictions != OpenAPI_rat_type_NULL) {
@@ -504,6 +519,11 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_1_convertToJSON(OpenAPI_acc
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [rfsp_index]");
         goto end;
     }
+    } else if (access_and_mobility_subscription_data_1->is_rfsp_index_null) {
+        if (cJSON_AddNullToObject(item, "rfspIndex") == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [rfsp_index]");
+            goto end;
+        }
     }
 
     if (access_and_mobility_subscription_data_1->is_subs_reg_timer) {
@@ -511,6 +531,11 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_1_convertToJSON(OpenAPI_acc
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [subs_reg_timer]");
         goto end;
     }
+    } else if (access_and_mobility_subscription_data_1->is_subs_reg_timer_null) {
+        if (cJSON_AddNullToObject(item, "subsRegTimer") == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [subs_reg_timer]");
+            goto end;
+        }
     }
 
     if (access_and_mobility_subscription_data_1->is_ue_usage_type) {
@@ -539,6 +564,11 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_1_convertToJSON(OpenAPI_acc
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [active_time]");
         goto end;
     }
+    } else if (access_and_mobility_subscription_data_1->is_active_time_null) {
+        if (cJSON_AddNullToObject(item, "activeTime") == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [active_time]");
+            goto end;
+        }
     }
 
     if (access_and_mobility_subscription_data_1->sor_info) {
@@ -682,6 +712,11 @@ cJSON *OpenAPI_access_and_mobility_subscription_data_1_convertToJSON(OpenAPI_acc
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [trace_data]");
         goto end;
     }
+    } else if (access_and_mobility_subscription_data_1->is_trace_data_null) {
+        if (cJSON_AddNullToObject(item, "traceData") == NULL) {
+            ogs_error("OpenAPI_access_and_mobility_subscription_data_1_convertToJSON() failed [trace_data]");
+            goto end;
+        }
     }
 
     if (access_and_mobility_subscription_data_1->cag_data) {
@@ -1124,10 +1159,12 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
 
     nssai = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_data_1JSON, "nssai");
     if (nssai) {
+    if (!cJSON_IsNull(nssai)) {
     nssai_local_nonprim = OpenAPI_nssai_1_parseFromJSON(nssai);
     if (!nssai_local_nonprim) {
         ogs_error("OpenAPI_nssai_1_parseFromJSON failed [nssai]");
         goto end;
+    }
     }
     }
 
@@ -1142,11 +1179,17 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         rat_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(rat_restrictions_local, rat_restrictions) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(rat_restrictions_local)) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [rat_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(rat_restrictionsList, (void *)OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(rat_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(rat_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -1194,27 +1237,37 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         core_network_type_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(core_network_type_restrictions_local, core_network_type_restrictions) {
+            OpenAPI_core_network_type_e localEnum = OpenAPI_core_network_type_NULL;
             if (!cJSON_IsString(core_network_type_restrictions_local)) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [core_network_type_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(core_network_type_restrictionsList, (void *)OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring));
+            localEnum = OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_core_network_type_FromString(core_network_type_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(core_network_type_restrictionsList, (void *)localEnum);
         }
     }
 
     rfsp_index = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_data_1JSON, "rfspIndex");
     if (rfsp_index) {
+    if (!cJSON_IsNull(rfsp_index)) {
     if (!cJSON_IsNumber(rfsp_index)) {
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [rfsp_index]");
         goto end;
     }
     }
+    }
 
     subs_reg_timer = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_data_1JSON, "subsRegTimer");
     if (subs_reg_timer) {
+    if (!cJSON_IsNull(subs_reg_timer)) {
     if (!cJSON_IsNumber(subs_reg_timer)) {
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [subs_reg_timer]");
         goto end;
+    }
     }
     }
 
@@ -1244,9 +1297,11 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
 
     active_time = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_data_1JSON, "activeTime");
     if (active_time) {
+    if (!cJSON_IsNull(active_time)) {
     if (!cJSON_IsNumber(active_time)) {
         ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [active_time]");
         goto end;
+    }
     }
     }
 
@@ -1286,11 +1341,17 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         sor_update_indicator_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(sor_update_indicator_list_local, sor_update_indicator_list) {
+            OpenAPI_sor_update_indicator_e localEnum = OpenAPI_sor_update_indicator_NULL;
             if (!cJSON_IsString(sor_update_indicator_list_local)) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [sor_update_indicator_list]");
                 goto end;
             }
-            OpenAPI_list_add(sor_update_indicator_listList, (void *)OpenAPI_sor_update_indicator_FromString(sor_update_indicator_list_local->valuestring));
+            localEnum = OpenAPI_sor_update_indicator_FromString(sor_update_indicator_list_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_sor_update_indicator_FromString(sor_update_indicator_list_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(sor_update_indicator_listList, (void *)localEnum);
         }
     }
 
@@ -1398,10 +1459,12 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
 
     trace_data = cJSON_GetObjectItemCaseSensitive(access_and_mobility_subscription_data_1JSON, "traceData");
     if (trace_data) {
+    if (!cJSON_IsNull(trace_data)) {
     trace_data_local_nonprim = OpenAPI_trace_data_parseFromJSON(trace_data);
     if (!trace_data_local_nonprim) {
         ogs_error("OpenAPI_trace_data_parseFromJSON failed [trace_data]");
         goto end;
+    }
     }
     }
 
@@ -1491,11 +1554,17 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         primary_rat_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(primary_rat_restrictions_local, primary_rat_restrictions) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(primary_rat_restrictions_local)) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [primary_rat_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(primary_rat_restrictionsList, (void *)OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(primary_rat_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(primary_rat_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -1510,11 +1579,17 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         secondary_rat_restrictionsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(secondary_rat_restrictions_local, secondary_rat_restrictions) {
+            OpenAPI_rat_type_e localEnum = OpenAPI_rat_type_NULL;
             if (!cJSON_IsString(secondary_rat_restrictions_local)) {
                 ogs_error("OpenAPI_access_and_mobility_subscription_data_1_parseFromJSON() failed [secondary_rat_restrictions]");
                 goto end;
             }
-            OpenAPI_list_add(secondary_rat_restrictionsList, (void *)OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring));
+            localEnum = OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_error("OpenAPI_rat_type_FromString(secondary_rat_restrictions_local->valuestring) failed");
+                goto end;
+            }
+            OpenAPI_list_add(secondary_rat_restrictionsList, (void *)localEnum);
         }
     }
 
@@ -1690,13 +1765,16 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         internal_group_ids ? internal_group_idsList : NULL,
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
         subscribed_ue_ambr ? subscribed_ue_ambr_local_nonprim : NULL,
+        nssai && cJSON_IsNull(nssai) ? true : false,
         nssai ? nssai_local_nonprim : NULL,
         rat_restrictions ? rat_restrictionsList : NULL,
         forbidden_areas ? forbidden_areasList : NULL,
         service_area_restriction ? service_area_restriction_local_nonprim : NULL,
         core_network_type_restrictions ? core_network_type_restrictionsList : NULL,
+        rfsp_index && cJSON_IsNull(rfsp_index) ? true : false,
         rfsp_index ? true : false,
         rfsp_index ? rfsp_index->valuedouble : 0,
+        subs_reg_timer && cJSON_IsNull(subs_reg_timer) ? true : false,
         subs_reg_timer ? true : false,
         subs_reg_timer ? subs_reg_timer->valuedouble : 0,
         ue_usage_type ? true : false,
@@ -1705,6 +1783,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         mps_priority ? mps_priority->valueint : 0,
         mcs_priority ? true : false,
         mcs_priority ? mcs_priority->valueint : 0,
+        active_time && cJSON_IsNull(active_time) ? true : false,
         active_time ? true : false,
         active_time ? active_time->valuedouble : 0,
         sor_info ? sor_info_local_nonprim : NULL,
@@ -1724,6 +1803,7 @@ OpenAPI_access_and_mobility_subscription_data_1_t *OpenAPI_access_and_mobility_s
         service_gap_time ? service_gap_time->valuedouble : 0,
         mdt_user_consent ? mdt_user_consentVariable : 0,
         mdt_configuration ? mdt_configuration_local_nonprim : NULL,
+        trace_data && cJSON_IsNull(trace_data) ? true : false,
         trace_data ? trace_data_local_nonprim : NULL,
         cag_data ? cag_data_local_nonprim : NULL,
         stn_sr && !cJSON_IsNull(stn_sr) ? ogs_strdup(stn_sr->valuestring) : NULL,

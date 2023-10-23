@@ -777,7 +777,7 @@ static OpenAPI_smf_info_t *build_smf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("No TaiItem->tac");
             if (TaiItem) {
                 if (TaiItem->plmn_id)
-                    ogs_free(TaiItem->plmn_id);
+                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
                 ogs_free(TaiItem);
             }
             free_smf_info(SmfInfo);
@@ -972,7 +972,7 @@ static OpenAPI_amf_info_t *build_amf_info(ogs_sbi_nf_info_t *nf_info)
             ogs_error("No TaiItem->tac");
             if (TaiItem) {
                 if (TaiItem->plmn_id)
-                    ogs_free(TaiItem->plmn_id);
+                    ogs_sbi_free_plmn_id(TaiItem->plmn_id);
                 ogs_free(TaiItem);
             }
             free_amf_info(AmfInfo);
@@ -1501,6 +1501,10 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     ogs_assert(subscription_data);
     ogs_assert(subscription_data->req_nf_type);
 
+    /* Issue #2630 : The format of subscrCond is invalid. Must be 'oneOf'. */
+    ogs_assert(!subscription_data->subscr_cond.nf_type ||
+            !subscription_data->subscr_cond.service_name);
+
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
@@ -1549,10 +1553,12 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     if (subscription_data->subscr_cond.nf_type) {
         SubscrCond.nf_type = subscription_data->subscr_cond.nf_type;
         SubscriptionData->subscr_cond = &SubscrCond;
-    }
-    if (subscription_data->subscr_cond.service_name) {
+    } else if (subscription_data->subscr_cond.service_name) {
         SubscrCond.service_name = subscription_data->subscr_cond.service_name;
         SubscriptionData->subscr_cond = &SubscrCond;
+    } else {
+        ogs_fatal("SubscrCond must be 'oneOf'.");
+        ogs_assert_if_reached();
     }
 
     message.SubscriptionData = SubscriptionData;
