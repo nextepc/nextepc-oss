@@ -26,7 +26,7 @@
 
 static void show_version(void)
 {
-    printf("Open5GS %s\n\n", OPEN5GS_VERSION);
+    printf("NextEPC OSS %s\n\n", OPEN5GS_VERSION);
 }
 
 static void show_help(const char *name)
